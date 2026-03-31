@@ -55,7 +55,7 @@ router.post("/",validate(addToCartSchema),protect, addItemToCart);
  * @swagger
  * /cart:
  *   put:
- *     summary: Update cart item quantity(Admin only)
+ *     summary: Update cart item quantity
  *     tags: [Cart]
  *     security:
  *       - bearerAuth: []
