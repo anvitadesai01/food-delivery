@@ -1,0 +1,36 @@
+{
+  "name": "food_delivery_management",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon src/app.js",
+    "seed:admin": "node src/seeders/admin.seed.js",
+    "seed:restaurant": "node src/seeders/restaurant.seed.js",
+    "seed:menu": "node src/seeders/menu.seed.js",
+    "seed:user": "node src/seeders/user.seed.js",
+    "seed:cart": "node src/seeders/cart.seed.js",
+    "seed:order": "node src/seeders/order.seed.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "ioredis": "^5.10.1",
+    "joi": "^18.0.2",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.3.1",
+    "morgan": "^1.10.1",
+    "nodemon": "^3.1.14",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
+    "redis": "^5.11.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  }
+}
