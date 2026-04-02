@@ -9,7 +9,7 @@ const routes = require("./routes");
 const errorHandler = require("./middlewares/error.middleware");
 const passport = require("./config/passport");
 const swaggerUi = require("swagger-ui-express");
-const swaggerSpec = require("./docs/swagger");
+const swaggerSpec = require("./docs");
 const PORT = process.env.PORT || 5000;
 
 connectDB();

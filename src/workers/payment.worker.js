@@ -18,7 +18,7 @@ paymentQueue.process(async (job) => {
     await payment.save();
 
     await Order.findByIdAndUpdate(orderId, {
-      paymentStatus: "paid",
+      paymentStatus: "success",
     });
 
     console.log(" SUCCESS:", orderId);

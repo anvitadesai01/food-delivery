@@ -101,15 +101,17 @@ const placeOrder = async (req, res, next) => {
 
     await session.commitTransaction();
     session.endSession();
-    
-    await paymentQueue.add(
-      { orderId: order._id },
-      {
-        attempts: 3, // retry 3 times
-        backoff: 5000, // wait 5 sec between retries
-      }
-    );
 
+    // AFTER transaction commit
+    if (paymentMethod === "online") {
+      await paymentQueue.add(
+        { orderId: order._id },
+        {
+          attempts: 3,
+          backoff: 5000,
+        }
+      );
+    }
     return res
       .status(201)
       .json(new ApiResponse(201, "Order placed successfully", order));
