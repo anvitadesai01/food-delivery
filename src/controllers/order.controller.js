@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const orderQueue = require("../queues/order.queue");
 
 const Order = require("../models/order.model");
 const Cart = require("../models/cart.model");
@@ -103,16 +102,6 @@ const placeOrder = async (req, res, next) => {
 
     await session.commitTransaction();
     session.endSession();
-
-    await orderQueue.add(
-      "orderPlaced",
-      { orderId: order._id },
-      {
-        attempts: 2,
-        backoff: 3000,
-        removeOnComplete: true,
-      }
-    );
 
     return res
       .status(201)
