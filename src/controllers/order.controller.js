@@ -4,7 +4,7 @@ const Order = require("../models/order.model");
 const Cart = require("../models/cart.model");
 const MenuItem = require("../models/menuItem.model");
 const Payment = require("../models/payment.model");
-
+const paymentQueue = require("../queues/payment.queue");
 const ApiResponse = require("../utlis/ApiResponse");
 const ApiError = require("../utlis/ApiError");
 
@@ -36,14 +36,14 @@ const placeOrder = async (req, res, next) => {
     let totalAmount = 0;
     const orderItems = [];
 
-    // 🔥 get first item for restaurantId
+    //  get first item for restaurantId
     const firstItem = await MenuItem.findById(cart.items[0].menuItemId);
 
     if (!firstItem) {
       throw new ApiError(400, "Invalid cart items");
     }
 
-    // 🔥 stock check + deduction (atomic)
+    //  stock check + deduction (atomic)
     for (const item of cart.items) {
       const updatedItem = await MenuItem.findOneAndUpdate(
         {
@@ -67,7 +67,7 @@ const placeOrder = async (req, res, next) => {
       });
     }
 
-    // ✅ create order
+    //  create order
     const order = new Order({
       userId,
       restaurantId: firstItem.restaurantId,
@@ -79,29 +79,36 @@ const placeOrder = async (req, res, next) => {
 
     await order.save({ session });
 
-    // ✅ payment
-    const paymentStatus = paymentMethod === "online" ? "success" : "pending";
+    //  payment
 
+    // Always pending initially
     await Payment.create(
       [
         {
           orderId: order._id,
-          status: paymentStatus,
+          status: "pending",
           method: paymentMethod,
         },
       ],
       { session }
     );
 
-    order.paymentStatus = paymentStatus;
+    order.paymentStatus = "pending";
     await order.save({ session });
-
-    // ✅ clear cart
+    //  clear cart
     cart.items = [];
     await cart.save({ session });
 
     await session.commitTransaction();
     session.endSession();
+    
+    await paymentQueue.add(
+      { orderId: order._id },
+      {
+        attempts: 3, // retry 3 times
+        backoff: 5000, // wait 5 sec between retries
+      }
+    );
 
     return res
       .status(201)
@@ -130,7 +137,10 @@ const getOrderById = async (req, res, next) => {
       throw new ApiError(400, "Order ID is required");
     }
 
-    const order = await Order.findById(orderId)
+    const order = await Order.findOne({
+      _id: orderId,
+      userId: userId,
+    })
       .populate({
         path: "items.menuItemId",
         select: "name price",
@@ -141,10 +151,6 @@ const getOrderById = async (req, res, next) => {
       throw new ApiError(404, "Order not found");
     }
 
-    // 🔒 IMPORTANT: only owner can view
-    if (order.userId._id.toString() !== userId.toString()) {
-      throw new ApiError(403, "Access denied");
-    }
 
     return res
       .status(200)

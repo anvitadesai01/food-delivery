@@ -29,7 +29,7 @@ const addItemToCart = async (req, res, next) => {
     }
 
     if (item.stock < quantity) {
-      throw new ApiError(400, "Insufficient stock");
+      throw new ApiError(404, "Currently Item is Out of stock");
     }
 
     let cart = await Cart.findOne({ userId });
