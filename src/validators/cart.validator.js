@@ -1,8 +1,11 @@
 const Joi = require("joi");
+const objectId = require("../utlis/objectId.validator");
+
 
 const addToCartSchema = Joi.object({
   menuItemId: Joi.string()
     .required()
+    .custom(objectId)
     .messages({
       "any.required": "menuItemId is required",
     }),

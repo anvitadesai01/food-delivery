@@ -13,7 +13,7 @@ const {
 } = require("../controllers/restaurant.controller");
 const { getRestaurantMenu } = require("../controllers/menuItem.controller");
 const validate = require("../middlewares/validate.middleware");
-const { createRestaurantSchema } = require("../validators/restaurant.validate");
+const { createRestaurantSchema } = require("../validators/restaurant.validator");
 
 
 router.post("/",validate(createRestaurantSchema), protect, authorize("admin"), createRestaurant);

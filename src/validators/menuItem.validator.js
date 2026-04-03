@@ -1,12 +1,7 @@
 const Joi = require("joi");
-const mongoose = require("mongoose");
+const objectId = require("../utlis/objectId.validator");
 
-const objectId = (value, helpers) => {
-    if (!mongoose.Types.ObjectId.isValid(value)) {
-        return helpers.error("any.invalid");
-    }
-    return value;
-};
+
 
 const createMenuItemSchema = Joi.object({
     restaurantId: Joi.string()

@@ -107,6 +107,7 @@ const placeOrder = async (req, res, next) => {
       await paymentQueue.add(
         { orderId: order._id },
         {
+          jobId: order._id.toString(),
           attempts: 3,
           backoff: 5000,
         }
@@ -119,7 +120,7 @@ const placeOrder = async (req, res, next) => {
     await session.abortTransaction();
     session.endSession();
 
-    next(err instanceof ApiError ? err : new ApiError(500, err.message));
+    next(err);
   }
 };
 
@@ -158,7 +159,7 @@ const getOrderById = async (req, res, next) => {
       .status(200)
       .json(new ApiResponse(200, "Order fetched successfully", order));
   } catch (err) {
-    next(err instanceof ApiError ? err : new ApiError(500, err.message));
+    next(err)
   }
 };
 
@@ -204,7 +205,7 @@ const updateOrderStatus = async (req, res, next) => {
       .status(200)
       .json(new ApiResponse(200, "Order status updated", order));
   } catch (err) {
-    next(err instanceof ApiError ? err : new ApiError(500, err.message));
+   next(err);
   }
 };
 

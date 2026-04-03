@@ -7,7 +7,7 @@ const validate = require("../middlewares/validate.middleware");
 const {
   createOrderSchema,
   updateOrderStatusSchema,
-} = require("../validators/order.validation");
+} = require("../validators/order.validator");
 const authorize = require("../middlewares/role.middleware");
 
 

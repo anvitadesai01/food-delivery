@@ -120,12 +120,11 @@ const refundPayment = async (req, res, next) => {
         if (payment.status !== "success") {
             throw new ApiError(400, "Only successful payments can be refunded");
         }
-
-        payment.status = "failed";
+        payment.status = "refunded"; 
         await payment.save();
 
         await Order.findByIdAndUpdate(orderId, {
-            paymentStatus: "failed",
+            paymentStatus: "refunded",
         });
 
         return res

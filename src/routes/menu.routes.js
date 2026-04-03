@@ -10,7 +10,7 @@ const {
   deleteMenuItem,
 } = require('../controllers/menuItem.controller');
 const validate = require('../middlewares/validate.middleware');
-const { createMenuItemSchema } = require('../validators/menuItem.validation');
+const { createMenuItemSchema } = require('../validators/menuItem.validator');
 
 
 router.post('/',validate(createMenuItemSchema), protect, authorize('admin'), createMenuItem);

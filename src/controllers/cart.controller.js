@@ -77,7 +77,7 @@ const addItemToCart = async (req, res, next) => {
       .status(200)
       .json(new ApiResponse(200, "Item added to cart", updatedCart));
   } catch (err) {
-    next(err instanceof ApiError ? err : new ApiError(500, err.message));
+    next(err);
   }
 };
 
@@ -137,7 +137,7 @@ const updateCart = async (req, res, next) => {
       .status(200)
       .json(new ApiResponse(200, "Cart updated", updatedCart));
   } catch (err) {
-    next(err instanceof ApiError ? err : new ApiError(500, err.message));
+    next(err);
   }
 };
 
@@ -182,7 +182,7 @@ const removeItem = async (req, res, next) => {
       .status(200)
       .json(new ApiResponse(200, "Item removed from cart", updatedCart));
   } catch (err) {
-    next(err instanceof ApiError ? err : new ApiError(500, err.message));
+    next(err);
   }
 };
 
@@ -212,7 +212,7 @@ const getUserCart = async (req, res, next) => {
       .status(200)
       .json(new ApiResponse(200, "Cart fetched", cart));
   } catch (err) {
-    next(err instanceof ApiError ? err : new ApiError(500, err.message));
+    next(err);
   }
 };
 
