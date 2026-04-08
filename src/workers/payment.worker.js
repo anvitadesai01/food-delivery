@@ -1,7 +1,7 @@
 const paymentQueue = require("../queues/payment.queue");
 const Payment = require("../models/payment.model");
 const Order = require("../models/order.model");
-const MenuItem = require("../models/menuItem.model"); // ✅ NEW
+const MenuItem = require("../models/menuItem.model"); 
 
 paymentQueue.process(async (job) => {
   const { orderId } = job.data;

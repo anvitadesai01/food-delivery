@@ -1,3 +1,4 @@
+require("./cron/cancelOrder.cron");
 require("dotenv").config();
 const express = require("express");
 const app = express();

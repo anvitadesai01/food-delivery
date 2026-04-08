@@ -56,7 +56,7 @@ const retryPayment = async (req, res, next) => {
         order.paymentStatus = "pending";
         await order.save();
 
-        // 🔥 PUSH AGAIN TO QUEUE
+        // PUSH AGAIN TO QUEUE
         await paymentQueue.add(
             { orderId },
             {
@@ -69,7 +69,7 @@ const retryPayment = async (req, res, next) => {
             .status(200)
             .json(new ApiResponse(200, "Payment retry initiated"));
     } catch (err) {
-        next(err instanceof ApiError ? err : new ApiError(500, err.message));
+        next(err);
     }
 };
 
