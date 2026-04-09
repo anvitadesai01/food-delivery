@@ -10,14 +10,14 @@ const {
   getUserCart
 } = require("../controllers/cart.controller");
 const validate = require("../middlewares/validate.middleware");
-const { addToCartSchema ,u, updateCartSchema, removeItemSchema} = require("../validators/cart.validator");
+const { addToCartSchema , updateCartSchema, removeItemSchema} = require("../validators/cart.validator");
 
-router.post("/",validate(addToCartSchema),protect, addItemToCart);
+router.post("/",protect,validate(addToCartSchema), addItemToCart);
 
-router.put("/", validate(updateCartSchema),protect,  updateCart);
+router.put("/", protect,validate(addToCartSchema),  updateCart);
 
 
-router.delete("/:menuItemId", validate(removeItemSchema), protect, removeItem);
+router.delete("/:menuItemId",  protect,validate(removeItemSchema), removeItem);
 
 
 router.get("/", protect, getUserCart);

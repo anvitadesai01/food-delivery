@@ -105,7 +105,7 @@ const updateCart = async (req, res, next) => {
       (i) => i.menuItemId.toString() === menuItemId.toString()
     );
 
-    if (!item) throw new ApiError(404, "Item not in cart");
+    if (!item) throw new ApiError(404, "Item is not available in cart");
 
     const menuItem = await MenuItem.findById(menuItemId);
 
@@ -168,7 +168,7 @@ const removeItem = async (req, res, next) => {
     );
 
     if (cart.items.length === initialLength) {
-      throw new ApiError(404, "Item not in cart");
+      throw new ApiError(404, "Item is not available in cart");
     }
 
     await cart.save();

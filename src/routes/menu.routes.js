@@ -13,7 +13,7 @@ const validate = require('../middlewares/validate.middleware');
 const { createMenuItemSchema } = require('../validators/menuItem.validator');
 
 
-router.post('/',validate(createMenuItemSchema), protect, authorize('admin'), createMenuItem);
+router.post('/', protect, authorize('admin'),validate(createMenuItemSchema), createMenuItem);
 
 
 router.put('/:id', protect, authorize('admin'), updateMenuItem);

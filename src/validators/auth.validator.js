@@ -6,7 +6,7 @@ const passwordPattern =
 const registerSchema = Joi.object({
   name: Joi.string().min(2).trim().required().messages({
     "string.empty": "Name is required",
-    "string.name":"at least 2 characters are required"
+    "string.name": "at least 2 characters are required"
   }),
   email: Joi.string()
     .email()
@@ -29,7 +29,10 @@ const registerSchema = Joi.object({
     "any.only": "Passwords do not match",
     "string.empty": "Confirm password is required",
   }),
-});
+}).unknown(false)
+  .messages({
+    "object.unknown": "Invalid field provided",
+  });
 
 const loginSchema = Joi.object({
   email: Joi.string()
@@ -41,9 +44,14 @@ const loginSchema = Joi.object({
       "string.email": "Invalid email format",
     }),
 
-  password: Joi.string().required().messages({
+  password: Joi.string().required().pattern(new RegExp(passwordPattern)).messages({
     "string.empty": "Password is required",
+    "string.pattern.base":
+      "password must be 8-30 characters long,incude uppercase,lowercase,number & special character",
   }),
-});
+}).unknown(false)
+  .messages({
+    "object.unknown": "Invalid field provided",
+  });;
 
 module.exports = { registerSchema, loginSchema };

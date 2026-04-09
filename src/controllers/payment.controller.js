@@ -4,6 +4,7 @@ const paymentQueue = require("../queues/payment.queue");
 
 const ApiResponse = require("../utlis/ApiResponse");
 const ApiError = require("../utlis/ApiError");
+const redisClient = require("../config/redis");
 
 /**
  * GET PAYMENT BY ORDER ID
@@ -76,15 +77,51 @@ const retryPayment = async (req, res, next) => {
 /**
  * ADMIN → ALL PAYMENTS
  */
+
 const getAllPayments = async (req, res, next) => {
     try {
+        //  pagination 
+        let { page = 1, limit = 10 } = req.query;
+
+        page = parseInt(page);
+        limit = parseInt(limit);
+
+        const skip = (page - 1) * limit;
+
+        //  custom cache key
+        const cacheKey = `payments:page:${page}:limit:${limit}`;
+
+        // 🔍 1. Check cache
+        const cachedData = await redisClient.get(cacheKey);
+
+        if (cachedData) {
+            return res.status(200).json({
+                success: true,
+                message: "Payments fetched (cache)",
+                data: JSON.parse(cachedData),
+            });
+        }
+
+        // Cache miss → DB call
         const payments = await Payment.find()
             .populate("orderId")
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
 
-        return res
-            .status(200)
-            .json(new ApiResponse(200, "All payments", payments));
+        //  2. Store in Redis (TTL = 60 sec)
+        await redisClient.setEx(
+            cacheKey,
+            60,
+            JSON.stringify(payments)
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: "Payments fetched",
+            data: payments,
+        });
+
     } catch (err) {
         next(err);
     }
@@ -120,7 +157,7 @@ const refundPayment = async (req, res, next) => {
         if (payment.status !== "success") {
             throw new ApiError(400, "Only successful payments can be refunded");
         }
-        payment.status = "refunded"; 
+        payment.status = "refunded";
         await payment.save();
 
         await Order.findByIdAndUpdate(orderId, {

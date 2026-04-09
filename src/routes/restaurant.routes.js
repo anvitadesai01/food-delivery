@@ -16,7 +16,7 @@ const validate = require("../middlewares/validate.middleware");
 const { createRestaurantSchema } = require("../validators/restaurant.validator");
 
 
-router.post("/",validate(createRestaurantSchema), protect, authorize("admin"), createRestaurant);
+router.post("/", protect, authorize("admin"),validate(createRestaurantSchema), createRestaurant);
 
 router.put("/:id", protect, authorize("admin"), updateRestaurant);
 

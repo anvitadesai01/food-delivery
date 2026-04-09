@@ -49,9 +49,8 @@ const createMenuItemSchema = Joi.object({
         .messages({
             "boolean.base": "Availability must be true or false",
         }),
-})
-    .unknown(false)
-    .messages({
+}).unknown(false)
+   .messages({
         "object.unknown": "Invalid field provided",
     });
 

@@ -11,7 +11,10 @@ const createOrderSchema = Joi.object({
       "string.base": "Payment method must be a string",
       "string.empty": "Payment method cannot be empty",
     }),
-});
+}).unknown(false)
+  .messages({
+    "object.unknown": "Invalid field provided",
+  });;
 
 const updateOrderStatusSchema = Joi.object({
   status: Joi.string()
@@ -23,7 +26,10 @@ const updateOrderStatusSchema = Joi.object({
       "string.base": "Status must be a string",
       "string.empty": "Status cannot be empty",
     }),
-});
+}).unknown(false)
+  .messages({
+    "object.unknown": "Invalid field provided",
+  });
 
 
 

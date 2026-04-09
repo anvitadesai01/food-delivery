@@ -59,13 +59,18 @@ const placeOrder = async (req, res, next) => {
         throw new ApiError(400, "Item out of stock or unavailable");
       }
 
-      totalAmount += updatedItem.price * item.quantity;
+      const itemTotal = updatedItem.price * item.quantity;
+
+      totalAmount += itemTotal;
 
       orderItems.push({
         menuItemId: item.menuItemId,
         quantity: item.quantity,
       });
     }
+
+    // ✅ ADD THIS HERE
+    totalAmount = Number(totalAmount.toFixed(2));
 
     //  create order
     const order = new Order({
@@ -205,7 +210,7 @@ const updateOrderStatus = async (req, res, next) => {
       .status(200)
       .json(new ApiResponse(200, "Order status updated", order));
   } catch (err) {
-   next(err);
+    next(err);
   }
 };
 

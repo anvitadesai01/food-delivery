@@ -57,9 +57,25 @@
  *     tags: [Payments]
  *     security:
  *       - bearerAuth: []
+ *
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number
+ *
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of records per page
+ *
  *     responses:
  *       200:
- *         description: List of all payments
+ *         description: List of payments
  *         content:
  *           application/json:
  *             schema:
@@ -68,6 +84,9 @@
  *                 success:
  *                   type: boolean
  *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Payments fetched
  *                 data:
  *                   type: array
  *                   items:
@@ -82,6 +101,22 @@
  *                       amount:
  *                         type: number
  *                         example: 999.99
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                       example: 47000
+ *                     page:
+ *                       type: integer
+ *                       example: 1
+ *                     limit:
+ *                       type: integer
+ *                       example: 10
+ *                     totalPages:
+ *                       type: integer
+ *                       example: 4700
+ *
  *       401:
  *         description: Unauthorized - token missing or invalid
  *       403:
@@ -89,7 +124,6 @@
  *       500:
  *         description: Internal server error
  */
-
 
 /**
  * @swagger
