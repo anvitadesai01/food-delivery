@@ -16,17 +16,16 @@ const validate = require("../middlewares/validate.middleware");
 const { createRestaurantSchema } = require("../validators/restaurant.validator");
 
 
+
 router.post("/", protect, authorize("admin"),validate(createRestaurantSchema), createRestaurant);
-
 router.put("/:id", protect, authorize("admin"), updateRestaurant);
-
 router.delete("/:id", protect, authorize("admin"), deleteRestaurant);
-
 router.get("/", getAllRestaurants);
-
 router.get("/top", getTopRestaurantsHandler);
-
-
 router.get("/:id/menu", getRestaurantMenu);
+
+
+
+
 
 module.exports = router;

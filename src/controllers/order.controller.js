@@ -4,7 +4,7 @@ const Order = require("../models/order.model");
 const Cart = require("../models/cart.model");
 const MenuItem = require("../models/menuItem.model");
 const Payment = require("../models/payment.model");
-const paymentQueue = require("../queues/payment.queue");
+const orderQueue = require("../queues/order.queue");
 const ApiResponse = require("../utlis/ApiResponse");
 const ApiError = require("../utlis/ApiError");
 
@@ -14,7 +14,7 @@ const ApiError = require("../utlis/ApiError");
 const placeOrder = async (req, res, next) => {
   const session = await mongoose.startSession();
   session.startTransaction();
-
+  let isTransactionCommitted = false;
   try {
     const userId = req.user?._id;
     const { paymentMethod } = req.body;
@@ -105,16 +105,19 @@ const placeOrder = async (req, res, next) => {
     await cart.save({ session });
 
     await session.commitTransaction();
+    isTransactionCommitted = true;
     session.endSession();
 
     // AFTER transaction commit
     if (paymentMethod === "online") {
-      await paymentQueue.add(
+      await orderQueue.add(
+        "cancel-order",
         { orderId: order._id },
         {
-          jobId: order._id.toString(),
-          attempts: 3,
-          backoff: 5000,
+          delay: 10000,
+          jobId: `cancel-${order._id}`,
+          removeOnComplete: true,  // ✅ auto delete
+          removeOnFail: true       // ✅ auto delete
         }
       );
     }
@@ -122,9 +125,10 @@ const placeOrder = async (req, res, next) => {
       .status(201)
       .json(new ApiResponse(201, "Order placed successfully", order));
   } catch (err) {
-    await session.abortTransaction();
+    if (!isTransactionCommitted) {
+      await session.abortTransaction();
+    }
     session.endSession();
-
     next(err);
   }
 };

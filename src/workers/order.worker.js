@@ -1,43 +1,38 @@
 const orderQueue = require("../queues/order.queue");
 const Order = require("../models/order.model");
+const Payment = require("../models/payment.model");
 
-orderQueue.process("cancel-unpaid-orders", async () => {
-  console.log("Worker: Checking unpaid ONLINE orders...");
+orderQueue.process("cancel-order", async (job) => {
+  const { orderId } = job.data;
 
-  const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+  console.log("Checking order:", orderId);
 
-  const orders = await Order.aggregate([
-    {
-      $match: {
-        status: "placed",
-        createdAt: { $lte: fifteenMinutesAgo },
-      },
-    },
-    {
-      $lookup: {
-        from: "payments",
-        localField: "_id",
-        foreignField: "orderId",
-        as: "payment",
-      },
-    },
-    { $unwind: "$payment" },
-    {
-      $match: {
-        "payment.status": "pending",
-        "payment.method": "online",
-      },
-    },
-  ]);
+  const order = await Order.findById(orderId);
 
-  const orderIds = orders.map(o => o._id);
+  if (!order) {
+    console.log("Order not found");
+    return;
+  }
 
-  if (orderIds.length > 0) {
-    const result = await Order.updateMany(
-      { _id: { $in: orderIds } },
-      { $set: { status: "cancelled" } }
-    );
+  // If already processed → skip
+  if (order.status !== "placed") {
+    console.log("Order already processed:", order.status);
+    return;
+  }
 
-    console.log(`Cancelled ${result.modifiedCount} orders`);
+  const payment = await Payment.findOne({ orderId });
+
+  if (!payment) {
+    console.log("Payment not found");
+    return;
+  }
+
+  if (payment.status === "pending" && payment.method === "online") {
+    order.status = "cancelled";
+    await order.save();
+
+    console.log("Order cancelled:", orderId);
+  } else {
+    console.log("Payment completed, no cancellation");
   }
 });

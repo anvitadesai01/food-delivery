@@ -21,9 +21,13 @@ const registerUser = async (req, res, next) => {
     // remove password from response
     const userObj = user.toObject();
     delete userObj.password;
+    const token = generateToken(user);
 
     return res.json(
-      new ApiResponse(201, "User registered successfully", userObj)
+      new ApiResponse(201, "User registered successfully", {
+        user: userObj,
+        token,
+      })
     );
   } catch (err) {
     next(err);
@@ -51,9 +55,14 @@ const loginUser = async (req, res, next) => {
 
     // generate token
     const token = generateToken(user);
+    const userObj = user.toObject();
+    delete userObj.password;
 
     return res.json(
-      new ApiResponse(200, "Login successful", { token })
+      new ApiResponse(200, "Login successful", {
+        user: userObj,
+        token,
+      })
     );
   } catch (err) {
     next(err);

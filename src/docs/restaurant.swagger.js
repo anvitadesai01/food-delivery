@@ -8,7 +8,7 @@
 
 /**
  * @swagger
- * /restaurant:
+ * /restaurants:
  *   post:
  *     summary: Create restaurant
  *     tags: [Restaurant]
@@ -45,7 +45,7 @@
 
 /**
  * @swagger
- * /restaurant/{id}:
+ * /restaurants/{id}:
  *   put:
  *     summary: Update restaurant
  *     tags: [Restaurant]
@@ -83,7 +83,7 @@
 
 /**
  * @swagger
- * /restaurant/{id}:
+ * /restaurants/{id}:
  *   delete:
  *     summary: Delete restaurant
  *     tags: [Restaurant]
@@ -104,7 +104,7 @@
 
 /**
  * @swagger
- * /restaurant:
+ * /restaurants:
  *   get:
  *     summary: Get restaurants
  *     tags: [Get Restaurants]
@@ -144,7 +144,7 @@
 
 /**
  * @swagger
- * /restaurant/top:
+ * /restaurants/top:
  *   get:
  *     summary: Get top restaurants
  *     tags: [Get Restaurants]
@@ -155,7 +155,7 @@
 
 /**
  * @swagger
- * /restaurant/{id}/menu:
+ * /restaurants/{id}/menu:
  *   get:
  *     summary: Get menu items for a restaurant
  *     tags: [Get Menu By Restaurant]

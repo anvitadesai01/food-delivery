@@ -14,7 +14,7 @@ const { addToCartSchema , updateCartSchema, removeItemSchema} = require("../vali
 
 router.post("/",protect,validate(addToCartSchema), addItemToCart);
 
-router.put("/", protect,validate(addToCartSchema),  updateCart);
+router.put("/", protect,validate(updateCartSchema),  updateCart);
 
 
 router.delete("/:menuItemId",  protect,validate(removeItemSchema), removeItem);

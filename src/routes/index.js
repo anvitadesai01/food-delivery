@@ -1,3 +1,4 @@
+
 const express= require("express")
 const router = express.Router()
 
@@ -18,3 +19,4 @@ router.use('/analytics',analyticsRouts)
 router.use('/payments',paymentRoutes)
 
 module.exports=router
+
