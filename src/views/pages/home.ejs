@@ -1,0 +1,23 @@
+<%- include("../partials/header") %>
+
+    <section class="hero">
+        <div class="container hero-content">
+            <h1>Order food from your favorite restaurants</h1>
+            <p>Fast delivery at your doorstep</p>
+
+            <div class="hero-actions">
+                <a href="/restaurants" class="btn-primary">Explore Restaurants</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="restaurants">
+        <div class="container">
+            <h2>Top Restaurants</h2>
+            <div id="restaurants" class="grid"></div>
+        </div>
+    </section>
+
+    <%- include("../partials/footer") %>
+
+        <script src="/js/home.js"></script>

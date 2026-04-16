@@ -1,0 +1,36 @@
+<%- include("../partials/header") %>
+
+<section class="container">
+  <h1>Restaurants</h1>
+
+  <!-- 🔍 SEARCH -->
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Search food or restaurant..." />
+    <button onclick="searchRestaurants()">Search</button>
+  </div>
+
+  <!-- 🎯 FILTERS -->
+  <div class="filters">
+    <select id="locationFilter">
+      <option value="">All Locations</option>
+      <option value="Surat">Surat</option>
+      <option value="Ahmedabad">Ahmedabad</option>
+    </select>
+
+    <select id="cuisineFilter">
+      <option value="">All Cuisines</option>
+      <option value="Pizza">Pizza</option>
+      <option value="Indian">Indian</option>
+      <option value="Fast Food">Fast Food</option>
+    </select>
+
+    <button onclick="applyFilters()">Apply Filters</button>
+  </div>
+
+  <!-- 🍽️ RESTAURANTS -->
+  <div id="restaurantList" class="grid"></div>
+</section>
+
+<%- include("../partials/footer") %>
+
+<script src="/js/restaurants.js"></script>

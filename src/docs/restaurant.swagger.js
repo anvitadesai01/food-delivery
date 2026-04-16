@@ -155,6 +155,29 @@
 
 /**
  * @swagger
+ * /restaurants/{id}:
+ *   get:
+ *     summary: Get restaurant by ID
+ *     tags: [Restaurant]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The restaurant ID
+ *     responses:
+ *       200:
+ *         description: Restaurant details fetched successfully
+ *       404:
+ *         description: Restaurant not found
+ *       500:
+ *         description: Internal server error
+ */
+
+
+/**
+ * @swagger
  * /restaurants/{id}/menu:
  *   get:
  *     summary: Get menu items for a restaurant

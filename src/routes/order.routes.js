@@ -20,6 +20,7 @@ router.post(
 
 
 router.get("/:id",protect, orderController.getOrderById);
+router.get("/", protect, orderController.getUserOrders);
 
 
 router.patch(
@@ -27,5 +28,6 @@ router.patch(
   validate(updateOrderStatusSchema),
   orderController.updateOrderStatus
 );
+
 
 module.exports = router;

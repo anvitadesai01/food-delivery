@@ -6,6 +6,8 @@ const morgan = require("morgan");
 const connectDB = require("./config/db");
 const path = require("path");
 require("./config/redis");
+const webRoutes = require("./routes/webRoutes"); // WEB
+
 const routes = require("./routes");
 const errorHandler = require("./middlewares/error.middleware");
 const passport = require("./config/passport");
@@ -13,19 +15,21 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./docs");
 const PORT = process.env.PORT || 5000;
 
+
 connectDB();
 
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 app.use(passport.initialize());
-// Set view engine
+
 app.set("view engine", "ejs");
 
-// Set views folder
 app.set("views", path.join(__dirname, "views"));
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use("/", webRoutes);     
 app.use("/api", routes);
 
 app.use((req, res) => {

@@ -1,0 +1,44 @@
+<header class="navbar">
+  <div class="container nav-wrapper">
+
+    <div class="logo">🍔 FoodApp</div>
+
+    <nav class="nav-links">
+      <a href="/">Home</a>
+      <a href="/restaurants">Restaurants</a>
+    </nav>
+
+    <div class="nav-actions" id="navActions"></div>
+
+  </div>
+</header>
+
+<script>
+  document.addEventListener("DOMContentLoaded", async () => {
+    const nav = document.getElementById("navActions");
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      const count = await getCartCount();
+
+      nav.innerHTML = `
+        <a href="/cart" class="btn-outline">
+          Cart (${count})
+        </a>
+
+        <a href="/orders" class="btn-outline">
+          Orders
+        </a>
+
+        <button onclick="logout()" class="btn-outline">
+          Logout
+        </button>
+      `;
+    } else {
+      nav.innerHTML = `
+        <a href="/login" class="btn-outline">Login</a>
+        <a href="/register" class="btn-primary">Sign Up</a>
+      `;
+    }
+  });
+</script>

@@ -11,7 +11,7 @@ const analyticsRouts=require('./analytics.routes')
 const paymentRoutes=require('./payment.routes')
 
 router.use('/auth',authRoutes)
-router.use('/restaurant', restaurantRoutes);
+router.use('/restaurants', restaurantRoutes);
 router.use('/menu',menuRoutes)
 router.use('/cart',cartRoutes)
 router.use('/orders',orderRoutes)

@@ -1,0 +1,19 @@
+<%- include("../partials/header") %>
+
+<div style="text-align:center; padding:50px;">
+  <h1>Something went wrong 😢</h1>
+  
+  <p><%= message || "Unexpected error occurred" %></p>
+
+<% if (locals.error && error.stack) { %>
+  <pre style="text-align:left; max-width:800px; margin:auto;">
+    <%= error.stack %>
+  </pre>
+<% } %>
+
+  <a href="/" style="display:inline-block; margin-top:20px;">
+    Go Back Home
+  </a>
+</div>
+
+<%- include("../partials/footer") %>

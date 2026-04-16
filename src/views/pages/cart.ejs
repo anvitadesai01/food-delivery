@@ -1,0 +1,23 @@
+<%- include("../partials/header") %>
+
+<section class="container">
+  <h1>Your Cart</h1>
+
+  <div id="cartItems"></div>
+
+  <h2 id="totalAmount"></h2>
+
+  <!-- ✅ PAYMENT -->
+  <select id="paymentMethod">
+    <option value="cod">Cash on Delivery</option>
+    <option value="online">Online Payment</option>
+  </select>
+
+  <button onclick="placeOrder()" class="btn-primary">
+    Place Order
+  </button>
+</section>
+
+<%- include("../partials/footer") %>
+
+<script src="/js/cart.js"></script>

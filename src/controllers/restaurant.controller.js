@@ -5,15 +5,27 @@ const redisClient = require("../config/redis");
 const ApiResponse = require("../utlis/ApiResponse");
 const ApiError = require("../utlis/ApiError");
 
+//  safer check
+const isApiRequest = (req) => req.baseUrl.startsWith("/api");
+
 /**
- *  Invalidate Restaurant Cache
+ * Invalidate Cache 
  */
 const invalidateRestaurantCache = async () => {
-  const keys = await redisClient.keys("restaurants:*");
+  let cursor = "0";
 
-  if (keys.length) {
-    await redisClient.del(keys);
-  }
+  do {
+    const [nextCursor, keys] = await redisClient.scan(cursor, {
+      MATCH: "restaurants:*",
+      COUNT: 100,
+    });
+
+    cursor = nextCursor;
+
+    if (keys.length) {
+      await redisClient.del(keys);
+    }
+  } while (cursor !== "0");
 
   await redisClient.del("top_restaurants");
 };
@@ -47,12 +59,11 @@ const createRestaurant = async (req, res, next) => {
  */
 const updateRestaurant = async (req, res, next) => {
   try {
-    const { id } = req.params;
-
-    const restaurant = await Restaurant.findByIdAndUpdate(id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const restaurant = await Restaurant.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
 
     if (!restaurant) {
       throw new ApiError(404, "Restaurant not found");
@@ -73,17 +84,13 @@ const updateRestaurant = async (req, res, next) => {
  */
 const deleteRestaurant = async (req, res, next) => {
   try {
-    const { id } = req.params;
-
-    const restaurant = await Restaurant.findByIdAndDelete(id);
+    const restaurant = await Restaurant.findByIdAndDelete(req.params.id);
 
     if (!restaurant) {
       throw new ApiError(404, "Restaurant not found");
     }
 
-    // delete related menu items
-    await MenuItem.deleteMany({ restaurantId: id });
-
+    await MenuItem.deleteMany({ restaurantId: req.params.id });
     await invalidateRestaurantCache();
 
     return res.json(
@@ -95,101 +102,136 @@ const deleteRestaurant = async (req, res, next) => {
 };
 
 /**
- * GET ALL RESTAURANTS (WITH CACHE + FILTER + PAGINATION)
+ * GET ALL RESTAURANTS 
  */
 const getAllRestaurants = async (req, res, next) => {
   try {
     const CACHE_KEY = `restaurants:${JSON.stringify(req.query)}`;
 
-    //  1. Cache check
-    const cachedData = await redisClient.get(CACHE_KEY);
+    let cachedData = await redisClient.get(CACHE_KEY);
+
+    let result;
 
     if (cachedData) {
       console.log("Cache HIT");
+      result = JSON.parse(cachedData);
+    } else {
+      console.log("Cache MISS -> DB");
 
-      const parsed = JSON.parse(cachedData);
+      let {
+        page = 1,
+        limit = 10,
+        location,
+        cuisine,
+        sort = "-rating -createdAt",
+        search
+      } = req.query;
 
-      return res.json(
-        new ApiResponse(
-          200,
-          parsed.total === 0
-            ? "No restaurants found"
-            : "Restaurants fetched",
-          parsed
-        )
-      );
+      page = Number(page);
+      limit = Number(limit);
+
+      if (Number.isNaN(page) || page < 1) page = 1;
+      if (Number.isNaN(limit) || limit < 1) limit = 10;
+
+      const MAX_LIMIT = 20;
+      if (limit > MAX_LIMIT) limit = MAX_LIMIT;
+
+      const allowedSortFields = ["rating", "createdAt"];
+
+      const sortFields = sort.split(" ").filter((field) => {
+        const cleanField = field.replace("-", "");
+        return allowedSortFields.includes(cleanField);
+      });
+
+      const safeSort = sortFields.join(" ") || "-rating";
+
+      const filter = {};
+
+      if (search) {
+        const regex = new RegExp(search, "i");
+
+        let restaurantIdsFromMenu = [];
+
+        try {
+          const menuItems = await MenuItem.find({
+            name: regex,
+          }).select("restaurantId");
+
+          restaurantIdsFromMenu = menuItems.map(
+            (item) => item.restaurantId
+          );
+        } catch (err) {
+          console.log("Menu search error:", err.message);
+        }
+
+        filter.$or = [
+          { name: regex },
+          { cuisine: regex },
+          { location: regex },
+          { _id: { $in: restaurantIdsFromMenu } },
+        ];
+      }
+      // 🔥 normal filters (optional, still works)
+      if (location) {
+        filter.location = { $regex: location, $options: "i" };
+      }
+
+      if (cuisine) {
+        const cuisines = Array.isArray(cuisine) ? cuisine : [cuisine];
+        filter.cuisine = {
+          $in: cuisines.map((c) => new RegExp(c, "i")),
+        };
+      }
+
+      const skip = (page - 1) * limit;
+
+      const restaurants = await Restaurant.find(filter)
+        .select("name location cuisine rating")
+        .sort(safeSort)
+        .skip(skip)
+        .limit(limit)
+        .lean();
+
+      const total = await Restaurant.countDocuments(filter);
+
+      result = {
+        total,
+        page,
+        limit,
+        sort: safeSort,
+        filters: {
+          location: location || "",
+          cuisine: Array.isArray(cuisine)
+            ? cuisine.join(", ")
+            : cuisine || "",
+          search: search || "",
+        },
+        data: restaurants,
+      };
+
+      await redisClient.set(CACHE_KEY, JSON.stringify(result), {
+        EX: 90,
+      });
     }
 
-    console.log("Cache MISS → DB");
+    const message =
+      result.total === 0 ? "No restaurants found" : "Restaurants fetched";
 
-    let {
-      page = 1,
-      limit = 10,
-      location,
-      cuisine,
-      sort = "-rating -createdAt",
-    } = req.query;
-
-    //  sanitize pagination
-    page = Number(page);
-    limit = Number(limit);
-
-    if (isNaN(page) || page < 1) page = 1;
-    if (isNaN(limit) || limit < 1) limit = 10;
-
-    const MAX_LIMIT = 20;
-    if (limit > MAX_LIMIT) limit = MAX_LIMIT;
-
-    //  safe sorting
-    const allowedSortFields = ["rating", "createdAt"];
-
-    const sortFields = sort.split(" ").filter((field) => {
-      const cleanField = field.replace("-", "");
-      return allowedSortFields.includes(cleanField);
-    });
-
-    const safeSort = sortFields.join(" ") || "-rating";
-
-    //  filters
-    const filter = {};
-
-    if (location) {
-      filter.location = { $regex: location, $options: "i" };
+    if (!isApiRequest(req)) {
+      return res.render("pages/restaurants", {
+        title: "Food Delivery | Restaurants",
+        currentPath: req.path,
+        restaurants: result.data,
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        sort: result.sort,
+        filters: result.filters,
+      });
     }
-
-    if (cuisine) {
-      const cuisines = Array.isArray(cuisine) ? cuisine : [cuisine];
-      const regexCuisines = cuisines.map((c) => new RegExp(c, "i"));
-      filter.cuisine = { $in: regexCuisines };
-    }
-
-    const skip = (page - 1) * limit;
-
-    const restaurants = await Restaurant.find(filter)
-      .select("name location cuisine rating")
-      .sort(safeSort)
-      .skip(skip)
-      .limit(limit)
-      .lean();
-
-    const total = await Restaurant.countDocuments(filter);
-
-    const result = {
-      total,
-      page,
-      limit,
-      data: restaurants,
-    };
-
-    //  2. Cache result
-    await redisClient.set(CACHE_KEY, JSON.stringify(result), { EX: 90 });
 
     return res.json(
-      new ApiResponse(
-        200,
-        total === 0 ? "No restaurants found" : "Restaurants fetched",
-        result
-      )
+      new ApiResponse(200, message, result)
     );
   } catch (err) {
     next(err);
@@ -197,38 +239,41 @@ const getAllRestaurants = async (req, res, next) => {
 };
 
 /**
- * GET TOP RESTAURANTS
+ * GET TOP RESTAURANTS 
  */
 const getTopRestaurantsHandler = async (req, res, next) => {
   try {
     const CACHE_KEY = "top_restaurants";
 
-    const cachedData = await redisClient.get(CACHE_KEY);
+    let cachedData = await redisClient.get(CACHE_KEY);
+
+    let restaurants;
 
     if (cachedData) {
       console.log("Cache HIT");
+      restaurants = JSON.parse(cachedData);
+    } else {
+      console.log("Cache MISS -> DB");
 
-      return res.json(
-        new ApiResponse(
-          200,
-          "Top restaurants fetched",
-          JSON.parse(cachedData)
-        )
-      );
+      restaurants = await Restaurant.find({
+        rating: { $gte: 4 },
+      })
+        .sort("-rating")
+        .limit(10)
+        .lean();
+
+      await redisClient.set(CACHE_KEY, JSON.stringify(restaurants), {
+        EX: 90,
+      });
     }
 
-    console.log("Cache MISS → DB");
-
-    const restaurants = await Restaurant.find({
-      rating: { $gte: 4 },
-    })
-      .sort("-rating")
-      .limit(15)
-      .lean();
-
-    await redisClient.set(CACHE_KEY, JSON.stringify(restaurants), {
-      EX: 90,
-    });
+    if (!isApiRequest(req)) {
+      return res.render("pages/restaurants", {
+        title: "Top Restaurants",
+        currentPath: req.path,
+        restaurants,
+      });
+    }
 
     return res.json(
       new ApiResponse(200, "Top restaurants fetched", restaurants)
@@ -238,10 +283,28 @@ const getTopRestaurantsHandler = async (req, res, next) => {
   }
 };
 
+const getRestaurantById = async (req, res, next) => {
+  try {
+    const restaurant = await Restaurant.findById(req.params.id);
+
+    if (!restaurant) {
+      throw new ApiError(404, "Restaurant not found");
+    }
+
+    return res.json(
+      new ApiResponse(200, "Restaurant fetched", restaurant)
+    );
+  } catch (err) {
+    next(err);
+  }
+};
+
+
 module.exports = {
   createRestaurant,
   updateRestaurant,
   deleteRestaurant,
   getAllRestaurants,
   getTopRestaurantsHandler,
+  getRestaurantById
 };

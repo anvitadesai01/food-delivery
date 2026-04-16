@@ -74,6 +74,44 @@
 
 /**
  * @swagger
+ * /orders:
+ *   get:
+ *     summary: Get logged-in user's orders
+ *     tags: [Order]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of user orders fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                   items:
+ *                     type: array
+ *                     items:
+ *                       type: object
+ *                   totalAmount:
+ *                     type: number
+ *                   status:
+ *                     type: string
+ *                   createdAt:
+ *                     type: string
+ *                     format: date-time
+ *       401:
+ *         description: Unauthorized (Token missing or invalid)
+ *       500:
+ *         description: Internal server error
+ */
+
+
+/**
+ * @swagger
  * /orders/{id}/status:
  *   patch:
  *     summary: Update order status (Admin only)

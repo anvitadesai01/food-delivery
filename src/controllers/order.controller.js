@@ -7,6 +7,7 @@ const Payment = require("../models/payment.model");
 const orderQueue = require("../queues/order.queue");
 const ApiResponse = require("../utlis/ApiResponse");
 const ApiError = require("../utlis/ApiError");
+const moment=require('moment-timezone')
 
 /**
  * PLACE ORDER (TRANSACTION SAFE)
@@ -218,8 +219,30 @@ const updateOrderStatus = async (req, res, next) => {
   }
 };
 
+const getUserOrders = async (req, res, next) => {
+  try {
+    const userId = req.user?._id;
+
+    if (!userId) {
+      throw new ApiError(401, "Unauthorized");
+    }
+
+    const orders = await Order.find({ userId })
+      .sort({ createdAt: -1 })
+      .populate("restaurantId", "name")
+      .populate("items.menuItemId", "name price");
+
+    return res.status(200).json(
+      new ApiResponse(200, "Orders fetched", orders)
+    );
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   placeOrder,
   getOrderById,
   updateOrderStatus,
+  getUserOrders
 };

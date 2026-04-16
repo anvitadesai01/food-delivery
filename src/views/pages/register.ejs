@@ -1,0 +1,19 @@
+<%- include("../partials/header") %>
+
+    <div class="auth-container">
+        <form class="auth-form" id="registerForm">
+            <h2>Sign Up</h2>
+
+            <input type="text" id="name" placeholder="Name" required />
+            <input type="email" id="email" placeholder="Email" required />
+            <input type="password" id="password" placeholder="Password" required />
+
+            <button type="submit" class="btn-primary">Register</button>
+
+            <p id="errorMsg" style="color:red;"></p>
+        </form>
+
+        <script src="/js/auth.js"></script>
+    </div>
+
+    <%- include("../partials/footer") %>

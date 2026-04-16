@@ -10,6 +10,7 @@ const {
   deleteRestaurant,
   getAllRestaurants,
   getTopRestaurantsHandler,
+  getRestaurantById
 } = require("../controllers/restaurant.controller");
 const { getRestaurantMenu } = require("../controllers/menuItem.controller");
 const validate = require("../middlewares/validate.middleware");
@@ -22,6 +23,8 @@ router.put("/:id", protect, authorize("admin"), updateRestaurant);
 router.delete("/:id", protect, authorize("admin"), deleteRestaurant);
 router.get("/", getAllRestaurants);
 router.get("/top", getTopRestaurantsHandler);
+router.get("/:id", getRestaurantById); // ✅ ADD THIS
+
 router.get("/:id/menu", getRestaurantMenu);
 
 
