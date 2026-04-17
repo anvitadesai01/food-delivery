@@ -1,0 +1,10 @@
+<%- include("../partials/header") %>
+<section class="container" style="padding: 40px 0;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+    <h2 style="font-size:24px;font-weight:700;">🍽️ Restaurants</h2>
+    <button class="btn-primary" onclick="createRestaurant()">+ Add Restaurant</button>
+  </div>
+  <div id="list" class="restaurant-grid"></div>
+</section>
+<%- include("../partials/footer") %>
+<script src="/js/admin/restaurants.js"></script>

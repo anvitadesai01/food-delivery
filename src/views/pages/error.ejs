@@ -1,18 +1,11 @@
 <%- include("../partials/header") %>
 
-<div style="text-align:center; padding:50px;">
-  <h1>Something went wrong 😢</h1>
-  
-  <p><%= message || "Unexpected error occurred" %></p>
-
-<% if (locals.error && error.stack) { %>
-  <pre style="text-align:left; max-width:800px; margin:auto;">
-    <%= error.stack %>
-  </pre>
-<% } %>
-
-  <a href="/" style="display:inline-block; margin-top:20px;">
-    Go Back Home
+<div style="text-align: center; padding: 80px 20px; min-height: 50vh; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+  <div style="font-size: 100px; margin-bottom: 24px;">😞</div>
+  <h1 style="font-size: 36px; font-weight: 700; margin-bottom: 12px; color: var(--text-dark);">Oops! Something went wrong</h1>
+  <p style="font-size: 16px; color: var(--text-muted); margin-bottom: 32px; max-width: 400px;"><%= message || "We encountered an unexpected error. Please try again later." %></p>
+  <a href="/" class="btn-primary" style="display: inline-flex; align-items: center; gap: 8px;">
+    ← Go Back Home
   </a>
 </div>
 

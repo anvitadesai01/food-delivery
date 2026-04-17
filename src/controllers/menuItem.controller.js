@@ -6,6 +6,49 @@ const ApiResponse = require("../utlis/ApiResponse");
 const ApiError = require("../utlis/ApiError");
 
 /**
+ * GET ALL AVAILABLE MENU ITEMS
+ */
+const getAllMenuItems = async (req, res, next) => {
+  try {
+    const { search, cuisine, page = 1, limit = 12 } = req.query;
+    
+    const query = {
+      availability: true,
+      stock: { $gt: 0 }
+    };
+
+    if (search) {
+      query.name = { $regex: search, $options: 'i' };
+    }
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    
+    const menuItems = await MenuItem.find(query)
+      .populate('restaurantId', 'name location')
+      .select('name price stock availability description restaurantId')
+      .skip(skip)
+      .limit(parseInt(limit))
+      .sort({ createdAt: -1 });
+
+    const total = await MenuItem.countDocuments(query);
+
+    return res.json(
+      new ApiResponse(200, "Menu items fetched successfully", {
+        data: menuItems,
+        pagination: {
+          currentPage: parseInt(page),
+          totalPages: Math.ceil(total / parseInt(limit)),
+          totalItems: total,
+          itemsPerPage: parseInt(limit)
+        }
+      })
+    );
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
  * GET MENU BY RESTAURANT (WITH CACHE)
  */
 const getRestaurantMenu = async (req, res, next) => {
@@ -159,6 +202,7 @@ const deleteMenuItem = async (req, res, next) => {
 };
 
 module.exports = {
+  getAllMenuItems,
   getRestaurantMenu,
   createMenuItem,
   updateMenuItem,

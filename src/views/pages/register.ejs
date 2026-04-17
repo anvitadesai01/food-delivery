@@ -1,19 +1,43 @@
 <%- include("../partials/header") %>
 
+<div class="auth-page">
     <div class="auth-container">
-        <form class="auth-form" id="registerForm">
-            <h2>Sign Up</h2>
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>Create Account</h1>
+                <p>Join us to order your favorite food</p>
+            </div>
 
-            <input type="text" id="name" placeholder="Name" required />
-            <input type="email" id="email" placeholder="Email" required />
-            <input type="password" id="password" placeholder="Password" required />
+            <form class="auth-form" id="registerForm">
+                <div class="form-group">
+                    <label for="name">👤 Full Name</label>
+                    <input type="text" id="name" placeholder="Enter your name" required />
+                </div>
 
-            <button type="submit" class="btn-primary">Register</button>
+                <div class="form-group">
+                    <label for="email">📧 Email Address</label>
+                    <input type="email" id="email" placeholder="Enter your email" required />
+                </div>
 
-            <p id="errorMsg" style="color:red;"></p>
-        </form>
+                <div class="form-group">
+                    <label for="password">🔐 Password</label>
+                    <input type="password" id="password" placeholder="Create a password" required minlength="6" />
+                </div>
 
-        <script src="/js/auth.js"></script>
+                <button type="submit" class="btn-primary">
+                    Create Account →
+                </button>
+
+                <div id="errorMsg" class="error-msg" style="display: none;"></div>
+            </form>
+
+            <div class="auth-footer">
+                Already have an account? <a href="/login">Sign in</a>
+            </div>
+        </div>
     </div>
+</div>
 
-    <%- include("../partials/footer") %>
+<%- include("../partials/footer") %>
+
+<script src="/js/auth.js"></script>

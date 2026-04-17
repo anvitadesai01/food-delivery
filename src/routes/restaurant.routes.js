@@ -24,7 +24,6 @@ router.delete("/:id", protect, authorize("admin"), deleteRestaurant);
 router.get("/", getAllRestaurants);
 router.get("/top", getTopRestaurantsHandler);
 router.get("/:id", getRestaurantById); // ✅ ADD THIS
-
 router.get("/:id/menu", getRestaurantMenu);
 
 

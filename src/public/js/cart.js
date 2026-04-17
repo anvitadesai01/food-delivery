@@ -1,8 +1,12 @@
 const API_BASE = "/api";
 
-// FETCH CART
 const loadCart = async () => {
     const token = localStorage.getItem("token");
+
+    if (!token) {
+        window.location.href = "/login";
+        return;
+    }
 
     const res = await fetch(`${API_BASE}/cart`, {
         headers: {
@@ -11,53 +15,77 @@ const loadCart = async () => {
     });
 
     const data = await res.json();
-
     const cart = data.data;
-
     renderCart(cart.items || []);
 };
 
-// RENDER CART
 const renderCart = (items) => {
-    const container = document.getElementById("cartItems");   // ✅ FIXED
-    const summary = document.getElementById("totalAmount");   // ✅ FIXED
+    const container = document.getElementById("cartItems");
+    const summaryDiv = document.getElementById("cartSummary");
 
     if (!items.length) {
-        container.innerHTML = "<p>Your cart is empty</p>";
-        summary.innerHTML = "";
+        container.innerHTML = `
+            <div class="empty-cart">
+                <div class="empty-cart-icon">🛒</div>
+                <h2>Your cart is empty</h2>
+                <p>Looks like you haven't added anything to your cart yet</p>
+                <a href="/restaurants" class="btn-primary">Browse Restaurants</a>
+            </div>
+        `;
+        summaryDiv.style.display = "none";
         return;
     }
 
-    let total = 0;
+    summaryDiv.style.display = "block";
 
-    container.innerHTML = items.map(item => {
-        const price = item.menuItemId.price;
-        const qty = item.quantity;
+    let subtotal = 0;
 
-        total += price * qty;
-
+    container.innerHTML = `
+        <div class="cart-header">
+            <span class="cart-title">Cart Items</span>
+            <span class="cart-count">${items.length} item${items.length !== 1 ? 's' : ''}</span>
+        </div>
+    ` + items.map(item => {
+        const price = item.menuItemId?.price || 0;
+        const qty = item.quantity || 1;
+        const itemTotal = price * qty;
+        subtotal += itemTotal;
+        
         return `
-      <div class="cart-item">
-        <div class="cart-info">
-          <h3>${item.menuItemId.name}</h3>
-          <p>₹${price}</p>
-        </div>
-
-        <div class="cart-actions">
-          <button onclick="updateQty('${item.menuItemId._id}', ${qty - 1})">-</button>
-          <span>${qty}</span>
-          <button onclick="updateQty('${item.menuItemId._id}', ${qty + 1})">+</button>
-        </div>
-
-        <button onclick="removeItem('${item.menuItemId._id}')">❌</button>
-      </div>
-    `;
+            <div class="cart-item">
+                <div class="cart-item-image">🍴</div>
+                <div class="cart-item-info">
+                    <div class="cart-item-name">${item.menuItemId?.name || 'Item'}</div>
+                    <div class="cart-item-price"><span>₹${price}</span> × ${qty}</div>
+                </div>
+                <div class="cart-item-actions">
+                    <div class="qty-control">
+                        <button class="qty-btn" onclick="updateQty('${item.menuItemId._id}', ${qty - 1})">−</button>
+                        <span class="qty-value">${qty}</span>
+                        <button class="qty-btn" onclick="updateQty('${item.menuItemId._id}', ${qty + 1})">+</button>
+                    </div>
+                    <span style="min-width: 60px; text-align: right; font-weight: 600;">₹${itemTotal}</span>
+                    <button class="remove-btn" onclick="removeItem('${item.menuItemId._id}')">🗑️</button>
+                </div>
+            </div>
+        `;
     }).join("");
 
-    summary.innerHTML = `Total: ₹${total.toFixed(2)}`;
+    const taxes = Math.round(subtotal * 0.05);
+    const deliveryFee = 40;
+    const total = subtotal + taxes + deliveryFee;
+
+    document.getElementById("subtotal").textContent = `₹${subtotal}`;
+    document.getElementById("taxes").textContent = `₹${taxes}`;
+    document.getElementById("totalAmount").textContent = `₹${total}`;
 };
-// UPDATE QTY
+
 const updateQty = async (menuItemId, quantity) => {
+    if (quantity < 1) {
+        removeItem(menuItemId);
+        return;
+    }
+
     const token = localStorage.getItem("token");
 
     await fetch(`${API_BASE}/cart`, {
@@ -72,7 +100,6 @@ const updateQty = async (menuItemId, quantity) => {
     loadCart();
 };
 
-// REMOVE ITEM
 const removeItem = async (menuItemId) => {
     const token = localStorage.getItem("token");
 
@@ -86,13 +113,12 @@ const removeItem = async (menuItemId) => {
     loadCart();
 };
 
-// INIT
 document.addEventListener("DOMContentLoaded", loadCart);
 
 const placeOrder = async () => {
     try {
         const token = localStorage.getItem("token");
-        const paymentMethod = document.getElementById("paymentMethod").value;
+        const paymentMethod = document.querySelector('input[name="payment"]:checked')?.value || 'cod';
 
         const res = await fetch("/api/orders", {
             method: "POST",
@@ -110,13 +136,21 @@ const placeOrder = async () => {
             return;
         }
 
-        alert("Order placed successfully 🎉");
-
-        // ✅ redirect to order tracking page
-        window.location.href = `/orders/${data.data._id}`;
+        showToast("Order placed successfully! 🎉");
+        setTimeout(() => {
+            window.location.href = `/orders/${data.data._id}`;
+        }, 1500);
 
     } catch (err) {
         console.error(err);
         alert("Something went wrong");
     }
+};
+
+const showToast = (message) => {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
 };

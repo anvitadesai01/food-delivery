@@ -1,16 +1,10 @@
-// ===============================
-// CONFIG
-// ===============================
 const API_BASE = "/api";
 
-// ===============================
-// FETCH HELPER
-// ===============================
 const fetchData = async (url) => {
   try {
     const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-
     if (!data.success) throw new Error(data.message);
     return data.data;
   } catch (err) {
@@ -19,104 +13,183 @@ const fetchData = async (url) => {
   }
 };
 
-// ===============================
-// LOAD TOP RESTAURANTS
-// ===============================
-const loadRestaurants = async () => {
+async function loadCuisines() {
+  const container = document.querySelector(".quick-filters");
+  if (!container) return;
+
+  // Reuse the restaurants data you already have — no extra API needed
+  const restaurants = await fetchData("/api/restaurants/top");
+  if (!restaurants || restaurants.length === 0) return;
+
+  const emojiMap = {
+    Pizza: "🍕", Indian: "🍛", "Fast Food": "🍔", Chinese: "🥡",
+    Desserts: "🍰", Italian: "🍝", Mexican: "🌮", Japanese: "🍣",
+    Thai: "🍜", Burgers: "🍔", Biryani: "🍚", Sushi: "🍱",
+    Salads: "🥗", Sandwiches: "🥪", Wraps: "🌯", Seafood: "🦐",
+    Vegan: "🥦", Bakery: "🥐", Cafe: "☕",
+  };
+
+  // Extract unique cuisines from all restaurants
+  const allCuisines = restaurants.flatMap(r => Array.isArray(r.cuisine) ? r.cuisine : []);
+  const uniqueCuisines = [...new Set(allCuisines)].filter(Boolean).sort();
+
+  const params = new URLSearchParams(window.location.search);
+  const activeCuisine = params.get("cuisine") || "";
+
+  container.innerHTML = `
+    <div class="filter-pill ${activeCuisine === "" ? "active" : ""}" data-cuisine="" onclick="filterCuisine('')">
+      All
+    </div>
+    ${uniqueCuisines.map(c => `
+      <div class="filter-pill ${activeCuisine === c ? "active" : ""}" data-cuisine="${c}" onclick="filterCuisine('${c}')">
+        ${c}
+      </div>
+    `).join("")}
+  `;
+}
+async function loadRestaurants() {
   const container = document.getElementById("restaurants");
   if (!container) return;
 
-  const restaurants = await fetchData("/api/restaurants/top");
+  const params = new URLSearchParams(window.location.search);
+  const cuisine = params.get("cuisine");
+  const search = params.get("search");
 
-  if (!restaurants || restaurants.length === 0) {
-    container.innerHTML = `<p>No restaurants available</p>`;
-    return;
+  let url = "/api/restaurants/top";
+  if (cuisine) {
+    url = `/api/restaurants?cuisine=${encodeURIComponent(cuisine)}`;
+  } else if (search) {
+    url = `/api/restaurants?search=${encodeURIComponent(search)}`;
   }
 
-  container.innerHTML = restaurants.map(r => `
+  container.innerHTML = Array(4).fill(`
     <div class="restaurant-card">
-
+      <div class="restaurant-image" style="background:#eee;"></div>
       <div class="restaurant-content">
-        <div class="restaurant-name">${r.name}</div>
-
-        <div class="restaurant-meta">
-          ${r.location}
-        </div>
-
-        <div class="restaurant-meta">
-          ${(r.cuisine || []).join(", ")}
-        </div>
-
-        <div class="rating">
-          ⭐ ${r.rating?.toFixed(1) || "New"}
-        </div>
+        <div style="height:16px;width:60%;background:#eee;border-radius:4px;margin-bottom:8px;"></div>
+        <div style="height:12px;width:40%;background:#eee;border-radius:4px;"></div>
       </div>
     </div>
   `).join("");
-};
 
-// ===============================
-// LOAD HIGHLIGHTS (TOP 5)
-// ===============================
-const loadHighlights = async () => {
-  const container = document.getElementById("highlights");
-  if (!container) return;
+  const restaurants = await fetchData(url);
 
-  const restaurants = await fetchData(`${API_BASE}/restaurants/top`);
-
-  if (!restaurants) return;
-
-  container.innerHTML = restaurants
-    .slice(0, 5)
-    .map(
-      (r, i) => `
-      <div class="highlight-item">
-        <span class="highlight-rank">#${i + 1}</span>
-        <div>
-          <strong>${r.name}</strong>
-          <small>${r.location}</small>
-        </div>
-        <span>⭐ ${r.rating || "New"}</span>
+  if (!restaurants || restaurants.length === 0) {
+    container.innerHTML = `
+      <div style="grid-column:1/-1;text-align:center;padding:60px 20px;">
+        <div style="font-size:80px;margin-bottom:20px;">🍽️</div>
+        <h3 style="font-size:22px;margin-bottom:12px;">No restaurants found</h3>
+        <p style="color:var(--text-muted);margin-bottom:20px;">Try a different search or explore all restaurants</p>
+        <a href="/restaurants" class="btn-primary" style="margin-top:16px;display:inline-flex;">View All Restaurants →</a>
       </div>
-    `
-    )
-    .join("");
-};
-
-
-// ===============================
-// LOAD DISHES (SAFE)
-// ===============================
-const loadDishes = async () => {
-  const container = document.getElementById("dishes");
-  if (!container) return;
-
-  const data = await fetchData(`${API_BASE}/menu`);
-
-  if (!data || data.length === 0) {
-    container.innerHTML = `<p>No dishes available</p>`;
+    `;
     return;
   }
 
-  container.innerHTML = data
-    .slice(0, 8)
-    .map(
-      (dish) => `
-      <div class="dish-card">
-        <h3>${dish.name}</h3>
-        <p>₹${dish.price}</p>
-        <small>${dish.availability ? "Available" : "Out of stock"}</small>
-      </div>
-    `
-    )
-    .join("");
-};
+  const list = (Array.isArray(restaurants) ? restaurants : restaurants.data || []).slice(0, 8);
 
-// ===============================
-// INIT
-// ===============================
-document.addEventListener("DOMContentLoaded", () => {
+  container.innerHTML = list.map(r => {
+    const cuisineList = Array.isArray(r.cuisine) ? r.cuisine : [];
+    const rating = r.rating?.toFixed(1) || "4.0";
+    const firstLetter = r.name?.charAt(0) || "R";
+    return `
+      <div class="restaurant-card" onclick="goToRestaurant('${r._id}')">
+        <div class="restaurant-image">
+          <div class="restaurant-image-placeholder">${firstLetter}</div>
+          ${r.offer ? `<div class="restaurant-offers"><span class="offer-badge">🎉 ${r.offer}</span></div>` : ""}
+        </div>
+        <div class="restaurant-content">
+          <div class="restaurant-header">
+            <div class="restaurant-name">${r.name}</div>
+            <div class="restaurant-rating">⭐ ${rating}</div>
+          </div>
+          <div class="restaurant-meta"><span>📍 ${r.location || "Location"}</span></div>
+          <div class="restaurant-cuisine">
+            ${cuisineList.slice(0, 3).map(c => `<span class="cuisine-tag">${c}</span>`).join("")}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function goToRestaurant(id) {
+  window.location.href = `/restaurants/${id}`;
+}
+
+async function loadDishes() {
+  const container = document.getElementById("dishes");
+  if (!container) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/menu?limit=8&page=1`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const response = await res.json();
+    const dishes = response.success ? (response.data?.data || []) : [];
+
+    if (!dishes.length) {
+      container.innerHTML = `
+        <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);">
+          <div style="font-size:48px;margin-bottom:12px;">🍜</div>
+          <p>No dishes available</p>
+          <a href="/menu" class="btn-outline" style="margin-top:12px;display:inline-flex;">Browse Menu →</a>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = dishes.slice(0, 8).map(dish => {
+      const restaurantName = dish.restaurantId?.name || "Restaurant";
+      const firstLetter = dish.name?.charAt(0) || "D";
+      return `
+        <div class="restaurant-card" onclick="goToRestaurant('${dish.restaurantId?._id}')">
+          <div class="restaurant-image">
+            <div class="restaurant-image-placeholder" style="font-size:48px;">${firstLetter}</div>
+          </div>
+          <div class="restaurant-content">
+            <div class="restaurant-header">
+              <div class="restaurant-name" style="font-size:16px;">${dish.name}</div>
+            </div>
+            <div class="restaurant-meta"><span>🍴 ${restaurantName}</span></div>
+            <div class="restaurant-info-row">
+              <div class="info-item" style="font-weight:700;color:var(--primary);font-size:16px;">₹${dish.price}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("");
+  } catch (err) {
+    console.error("Error loading dishes:", err);
+    container.innerHTML = `
+      <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);">
+        <div style="font-size:48px;margin-bottom:12px;">🍜</div>
+        <p>Failed to load dishes</p>
+      </div>
+    `;
+  }
+}
+
+function searchFromHome() {
+  const query = document.getElementById("heroSearchInput")?.value || "";
+  window.location.href = `/restaurants?search=${encodeURIComponent(query)}`;
+}
+
+function filterCuisine(cuisine) {
+  document.querySelectorAll(".filter-pill").forEach(p => p.classList.remove("active"));
+  const activePill = document.querySelector(`.filter-pill[data-cuisine="${cuisine}"]`);
+  if (activePill) activePill.classList.add("active");
+
+  const newUrl = cuisine ? `/?cuisine=${encodeURIComponent(cuisine)}` : "/";
+  window.history.pushState({}, "", newUrl);
   loadRestaurants();
-  loadHighlights();
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadCuisines();
+  loadRestaurants();
   loadDishes();
+
+  document.getElementById("heroSearchInput")?.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") searchFromHome();
+  });
 });

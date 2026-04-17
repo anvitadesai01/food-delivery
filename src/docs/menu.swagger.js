@@ -8,6 +8,43 @@
 /**
  * @swagger
  * /menu:
+ *   get:
+ *     summary: Retrieve all menu items
+ *     description: Get a list of all menu items, optionally filtered by restaurant
+ *     tags: [Menu]
+ *     parameters:
+ *       - in: query
+ *         name: restaurantId
+ *         schema:
+ *           type: string
+ *         description: Optional ID of the restaurant to filter items
+ *     responses:
+ *       200:
+ *         description: A list of menu items retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                   name:
+ *                     type: string
+ *                   price:
+ *                     type: number
+ *                   stock:
+ *                     type: number
+ *                   availability:
+ *                     type: boolean
+ *       500:
+ *         description: Server error
+ */
+
+/**
+ * @swagger
+ * /menu:
  *   post:
  *     summary: Create a new menu item
  *     description: Admin can create a menu item for a restaurant

@@ -1,9 +1,6 @@
 const API_BASE = "/api";
-
-// GET ORDER ID FROM URL
 const orderId = window.location.pathname.split("/").pop();
 
-// LOAD ORDER DETAILS
 const loadOrder = async () => {
     try {
         const token = localStorage.getItem("token");
@@ -22,40 +19,85 @@ const loadOrder = async () => {
         }
 
         const order = data.data;
+        
+        document.getElementById("orderIdDisplay").textContent = `Order #${order._id?.slice(-6).toUpperCase() || orderId.slice(-6).toUpperCase()}`;
 
-        // ✅ STATUS
-        document.getElementById("orderStatus").innerText = order.status;
+        updateProgressBar(order.status);
 
-        // ✅ ORDER INFO
         document.getElementById("orderInfo").innerHTML = `
-      <p><strong>Total:</strong> ₹${order.totalAmount}</p>
-      <p><strong>Payment:</strong> ${order.paymentStatus}</p>
-      <p><strong>Order Date:</strong> ${new Intl.DateTimeFormat(undefined, {
-            dateStyle: 'long',
-            timeStyle: 'short', // This automatically adds AM/PM based on user settings
-            hour12: true        // Forces AM/PM display
-        }).format(new Date(order.createdAt))}</p>
-
-    `;
+            <div class="info-item">
+                <div class="label">Restaurant</div>
+                <div class="value">${order.restaurantId?.name || 'N/A'}</div>
+            </div>
+            <div class="info-item">
+                <div class="label">Order Date</div>
+                <div class="value">${new Intl.DateTimeFormat('en-IN', {
+                    dateStyle: 'medium',
+                    timeStyle: 'short'
+                }).format(new Date(order.createdAt))}</div>
+            </div>
+            <div class="info-item">
+                <div class="label">Total Amount</div>
+                <div class="value price">₹${order.totalAmount}</div>
+            </div>
+            <div class="info-item">
+                <div class="label">Payment Method</div>
+                <div class="value" style="text-transform: capitalize;">${order.paymentMethod === 'cod' ? '💵 Cash on Delivery' : '💳 Online'}</div>
+            </div>
+            <div class="info-item">
+                <div class="label">Payment Status</div>
+                <div class="value" style="text-transform: capitalize; color: ${order.paymentStatus === 'paid' ? 'var(--success)' : '#f59e0b'};">
+                    ${order.paymentStatus || 'Pending'}
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="label">Order Status</div>
+                <div class="value" id="statusText" style="text-transform: capitalize;">${order.status || 'Pending'}</div>
+            </div>
+        `;
 
         const itemsContainer = document.getElementById("orderItems");
 
         if (!order.items || order.items.length === 0) {
-            itemsContainer.innerHTML = "<p>No items found</p>";
+            itemsContainer.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                    No items found
+                </div>
+            `;
         } else {
             itemsContainer.innerHTML = order.items.map(item => `
-        <div class="card">
-          <h3>${item.menuItemId?.name || "Item"}</h3>
-          <p>Price: ₹${item.menuItemId?.price || 0}</p>
-          <p>Qty: ${item.quantity}</p>
-          <p>Total: ₹${(item.menuItemId?.price || 0) * item.quantity}</p>
-        </div>
-      `).join("");
+                <div class="order-item">
+                    <div class="order-item-info">
+                        <span style="font-size: 24px;">🍴</span>
+                        <div>
+                            <div class="order-item-name">${item.menuItemId?.name || 'Item'}</div>
+                            <div class="order-item-qty">Qty: ${item.quantity}</div>
+                        </div>
+                    </div>
+                    <div class="order-item-price">₹${(item.menuItemId?.price || 0) * item.quantity}</div>
+                </div>
+            `).join("");
         }
 
     } catch (err) {
         console.error(err);
+        document.getElementById("orderIdDisplay").textContent = "Failed to load order";
     }
 };
-// INIT
+
+const updateProgressBar = (status) => {
+    const steps = document.querySelectorAll('.progress-step');
+    const statusOrder = ['confirmed', 'preparing', 'out-for-delivery', 'delivered'];
+    const currentIndex = statusOrder.indexOf(status?.toLowerCase());
+
+    steps.forEach((step, index) => {
+        step.classList.remove('completed', 'active');
+        if (index < currentIndex) {
+            step.classList.add('completed');
+        } else if (index === currentIndex) {
+            step.classList.add('active');
+        }
+    });
+};
+
 document.addEventListener("DOMContentLoaded", loadOrder);

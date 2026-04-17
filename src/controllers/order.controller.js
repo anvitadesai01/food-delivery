@@ -158,7 +158,8 @@ const getOrderById = async (req, res, next) => {
         path: "items.menuItemId",
         select: "name price",
       })
-      .populate("userId", "email");
+      .populate("userId", "email")
+      .populate("restaurantId","name");
 
     if (!order) {
       throw new ApiError(404, "Order not found");

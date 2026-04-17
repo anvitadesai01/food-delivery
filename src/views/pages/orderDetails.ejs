@@ -1,14 +1,41 @@
 <%- include("../partials/header") %>
 
-<section class="container">
-  <h1>Order Details</h1>
+<section class="order-details-section">
+  <div class="container">
+    <div class="order-details-header">
+      <h1 class="order-details-title">📦 Order Details</h1>
+      <p class="order-id" id="orderIdDisplay">Loading...</p>
+    </div>
 
-  <div id="orderInfo"></div>
+    <div class="order-progress" id="orderProgress">
+      <div class="progress-step" data-step="confirmed">
+        <div class="step-icon">✓</div>
+        <span class="step-label">Confirmed</span>
+      </div>
+      <div class="progress-step" data-step="preparing">
+        <div class="step-icon">👨‍🍳</div>
+        <span class="step-label">Preparing</span>
+      </div>
+      <div class="progress-step" data-step="out-for-delivery">
+        <div class="step-icon">🚴</div>
+        <span class="step-label">Out for Delivery</span>
+      </div>
+      <div class="progress-step" data-step="delivered">
+        <div class="step-icon">✅</div>
+        <span class="step-label">Delivered</span>
+      </div>
+    </div>
 
-  <h2>Status: <span id="orderStatus"></span></h2>
+    <div class="order-info-card">
+      <h3 class="order-info-title">Order Information</h3>
+      <div id="orderInfo" class="order-info-grid"></div>
+    </div>
 
-  <h2>Items</h2>
-  <div id="orderItems" class="grid"></div>
+    <div class="order-info-card">
+      <h3 class="order-info-title">🍽️ Order Items</h3>
+      <div id="orderItems" class="order-items-list"></div>
+    </div>
+  </div>
 </section>
 
 <%- include("../partials/footer") %>

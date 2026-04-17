@@ -5,25 +5,23 @@
     <div class="search-box">
       <div class="search-input-wrapper">
         <span>🔍</span>
-        <input type="text" id="searchInput" placeholder="Search restaurants, cuisines or dishes..." />
+        <input type="text" id="searchInput" placeholder="Search dishes, items..." />
       </div>
-      <button onclick="searchRestaurants()" class="btn-primary">Search</button>
+      <button onclick="searchMenu()" class="btn-primary">Search</button>
     </div>
-
-
   </div>
 </section>
 
 <section class="container restaurants">
   <div class="section-header">
-    <h2 class="section-title">🍽️ All <span>Restaurants</span></h2>
+    <h2 class="section-title">🍜 All <span>Dishes</span></h2>
     <span id="resultCount" style="color: var(--text-muted); font-size: 14px;"></span>
   </div>
-  <div id="restaurantList" class="restaurant-grid"></div>
+  <div id="menuList" class="restaurant-grid"></div>
   
   <div id="paginationContainer" class="pagination" style="display: none;"></div>
 </section>
 
 <%- include("../partials/footer") %>
 
-<script src="/js/restaurants.js"></script>
+<script src="/js/menu.js"></script>

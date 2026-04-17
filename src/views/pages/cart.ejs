@@ -1,23 +1,70 @@
 <%- include("../partials/header") %>
 
-<section class="container">
-  <h1>Your Cart</h1>
+<section class="cart-section">
+  <div class="container">
+    <div class="cart-header">
+      <h1 class="cart-title">🛒 Your Cart</h1>
+    </div>
 
-  <div id="cartItems"></div>
+    <div id="cartContent" class="cart-layout">
+      <div id="cartItems" class="cart-items-container">
+        <div class="loading">
+          <div class="loading-spinner"></div>
+        </div>
+      </div>
 
-  <h2 id="totalAmount"></h2>
+      <div id="cartSummary" class="cart-summary" style="display: none;">
+        <h3 class="summary-title">Order Summary</h3>
+        
+        <div class="summary-row">
+          <span class="label">Subtotal</span>
+          <span class="value" id="subtotal">₹0</span>
+        </div>
+        <div class="summary-row">
+          <span class="label">Delivery Fee</span>
+          <span class="value">₹40</span>
+        </div>
+        <div class="summary-row">
+          <span class="label">Taxes & Charges</span>
+          <span class="value" id="taxes">₹0</span>
+        </div>
+        
+        <div class="summary-row total">
+          <span class="label">Total</span>
+          <span class="value" id="totalAmount">₹0</span>
+        </div>
 
-  <!-- ✅ PAYMENT -->
-  <select id="paymentMethod">
-    <option value="cod">Cash on Delivery</option>
-    <option value="online">Online Payment</option>
-  </select>
+        <div class="payment-section">
+          <h4 class="payment-title">Payment Method</h4>
+          <div class="payment-options">
+            <div class="payment-option selected" onclick="selectPayment(this, 'cod')">
+              <input type="radio" name="payment" value="cod" checked />
+              <label>💵 Cash on Delivery</label>
+            </div>
+            <div class="payment-option" onclick="selectPayment(this, 'online')">
+              <input type="radio" name="payment" value="online" />
+              <label>💳 Online Payment</label>
+            </div>
+          </div>
+        </div>
 
-  <button onclick="placeOrder()" class="btn-primary">
-    Place Order
-  </button>
+        <button onclick="placeOrder()" class="place-order-btn">
+          Place Order →
+        </button>
+      </div>
+    </div>
+  </div>
 </section>
 
 <%- include("../partials/footer") %>
 
 <script src="/js/cart.js"></script>
+
+<script>
+function selectPayment(element, value) {
+    document.querySelectorAll('.payment-option').forEach(opt => opt.classList.remove('selected'));
+    element.classList.add('selected');
+    element.querySelector('input').checked = true;
+    document.getElementById('paymentMethod').value = value;
+}
+</script>

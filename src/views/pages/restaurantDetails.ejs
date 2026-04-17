@@ -1,14 +1,20 @@
 <%- include("../partials/header") %>
 
-<section class="container">
+<section class="restaurant-hero">
+  <div class="container restaurant-info">
+    <h1 id="restaurantName">Loading...</h1>
+    <div id="restaurantInfo" class="restaurant-info-meta"></div>
+  </div>
+</section>
 
-  <!-- 🍽️ RESTAURANT INFO -->
-  <div id="restaurantInfo" class="restaurant-info"></div>
-
-  <!-- 🍜 MENU -->
-  <h2>Menu</h2>
-  <div id="menuList" class="grid"></div>
-
+<section class="menu-section">
+  <div class="container">
+    <div class="menu-header">
+      <h2 class="menu-title">🍴 Menu</h2>
+      <span id="menuCount" class="menu-count"></span>
+    </div>
+    <div id="menuList" class="menu-grid"></div>
+  </div>
 </section>
 
 <%- include("../partials/footer") %>

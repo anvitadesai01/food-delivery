@@ -1,15 +1,29 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-  console.log("Auth JS Loaded ✅");
+  const showError = (elementId, message) => {
+    const errorEl = document.getElementById(elementId);
+    if (errorEl) {
+      errorEl.textContent = message;
+      errorEl.style.display = "block";
+      setTimeout(() => {
+        errorEl.style.display = "none";
+      }, 5000);
+    }
+  };
 
-  // LOGIN
+  const showSuccess = (message) => {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  };
+
   document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    console.log("Login submit triggered ✅");
 
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
-    const errorMsg = document.getElementById("errorMsg");
 
     try {
       const res = await fetch("/api/auth/login", {
@@ -21,30 +35,29 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       const data = await res.json();
-      console.log("Response:", data);
 
       if (!data.success) {
-        errorMsg.textContent = data.message;
+        showError("errorMsg", data.message || "Invalid credentials");
         return;
       }
 
       localStorage.setItem("token", data.data.token);
-      console.log("Token stored ✅");
-
-      window.location.href = "/";
+      showSuccess("Login successful! 🎉");
+      
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1000);
     } catch (err) {
-      errorMsg.textContent = "Something went wrong";
+      showError("errorMsg", "Something went wrong. Please try again.");
     }
   });
 
-  // REGISTER
   document.getElementById("registerForm")?.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const name = document.getElementById("name").value;
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
-    const errorMsg = document.getElementById("errorMsg");
 
     try {
       const res = await fetch("/api/auth/register", {
@@ -58,14 +71,18 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await res.json();
 
       if (!data.success) {
-        errorMsg.textContent = data.message;
+        showError("errorMsg", data.message || "Registration failed");
         return;
       }
 
       localStorage.setItem("token", data.data.token);
-      window.location.href = "/";
+      showSuccess("Account created! 🎉");
+      
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1000);
     } catch (err) {
-      errorMsg.textContent = "Something went wrong";
+      showError("errorMsg", "Something went wrong. Please try again.");
     }
   });
 

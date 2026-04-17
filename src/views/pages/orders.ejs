@@ -1,9 +1,16 @@
 <%- include("../partials/header") %>
 
-<section class="container">
-  <h1>Your Orders</h1>
+<section class="orders-section">
+  <div class="container">
+    <div class="orders-header">
+      <h1 class="orders-title">📋 Your Orders</h1>
+      <p class="orders-subtitle">Track and manage all your food orders</p>
+    </div>
 
-  <div id="ordersList"></div>
+    <div id="ordersList" class="orders-list"></div>
+    
+    <div id="paginationContainer" class="pagination" style="display: none;"></div>
+  </div>
 </section>
 
 <%- include("../partials/footer") %>

@@ -5,6 +5,7 @@ const protect = require('../middlewares/auth.middleware');
 const authorize = require('../middlewares/role.middleware');
 
 const {
+  getAllMenuItems,
   createMenuItem,
   updateMenuItem,
   deleteMenuItem,
@@ -12,6 +13,7 @@ const {
 const validate = require('../middlewares/validate.middleware');
 const { createMenuItemSchema } = require('../validators/menuItem.validator');
 
+router.get('/', getAllMenuItems);
 
 router.post('/', protect, authorize('admin'),validate(createMenuItemSchema), createMenuItem);
 
