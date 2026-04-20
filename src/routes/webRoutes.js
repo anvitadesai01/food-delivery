@@ -1,5 +1,7 @@
 const express = require("express");
 const router = express.Router();
+const { protectPage } = require("../middlewares/auth.middleware");
+const { authorizePage } = require("../middlewares/role.middleware");
 
 // ─── Public Pages ─────────────────────────────────────────────────────────────
 
@@ -9,17 +11,17 @@ router.get("/register", (req, res) => res.render("pages/register", { title: "Reg
 router.get("/restaurants", (req, res) => res.render("pages/restaurants", { title: "Restaurants" }));
 router.get("/menu", (req, res) => res.render("pages/menu", { title: "Menu - Dishes" }));
 router.get("/restaurants/:id", (req, res) => res.render("pages/restaurantDetails", { title: "Restaurant Details" }));
-router.get("/cart", (req, res) => res.render("pages/cart", { title: "Cart" }));
-router.get("/orders", (req, res) => res.render("pages/orders", { title: "Orders" }));
-router.get("/orders/:id", (req, res) => res.render("pages/orderDetails", { title: "Order Details" }));
+router.get("/cart", protectPage, (req, res) => res.render("pages/cart", { title: "Cart" }));
+router.get("/orders", protectPage, (req, res) => res.render("pages/orders", { title: "Orders" }));
+router.get("/orders/:id", protectPage, (req, res) => res.render("pages/orderDetails", { title: "Order Details" }));
 
 // ─── Admin Pages ──────────────────────────────────────────────────────────────
 
-router.get("/admin/dashboard", (req, res) => res.render("admin/dashboard", { title: "Admin Dashboard", currentPath: req.path }));
-router.get("/admin/restaurants", (req, res) => res.render("admin/restaurants", { title: "Admin | Restaurants", currentPath: req.path }));
-router.get("/admin/menu", (req, res) => res.render("admin/menu", { title: "Admin | Menu", currentPath: req.path }));
-router.get("/admin/orders", (req, res) => res.render("admin/orders", { title: "Admin | Orders", currentPath: req.path }));      // ← was missing
-router.get("/admin/analytics", (req, res) => res.render("admin/analytics", { title: "Admin | Analytics", currentPath: req.path })); // ← was missing
-router.get("/admin/payments", (req, res) => res.render("admin/payments", { title: "Admin | Payments", currentPath: req.path }));
+router.get("/admin/dashboard", protectPage, authorizePage("admin"), (req, res) => res.render("admin/dashboard", { title: "Admin Dashboard", currentPath: req.path }));
+router.get("/admin/restaurants", protectPage, authorizePage("admin"), (req, res) => res.render("admin/restaurants", { title: "Admin | Restaurants", currentPath: req.path }));
+router.get("/admin/menu", protectPage, authorizePage("admin"), (req, res) => res.render("admin/menu", { title: "Admin | Menu", currentPath: req.path }));
+router.get("/admin/orders", protectPage, authorizePage("admin"), (req, res) => res.render("admin/orders", { title: "Admin | Orders", currentPath: req.path }));
+router.get("/admin/analytics", protectPage, authorizePage("admin"), (req, res) => res.render("admin/analytics", { title: "Admin | Analytics", currentPath: req.path }));
+router.get("/admin/payments", protectPage, authorizePage("admin"), (req, res) => res.render("admin/payments", { title: "Admin | Payments", currentPath: req.path }));
 
 module.exports = router;

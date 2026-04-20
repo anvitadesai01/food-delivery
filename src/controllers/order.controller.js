@@ -7,7 +7,6 @@ const Payment = require("../models/payment.model");
 const orderQueue = require("../queues/order.queue");
 const ApiResponse = require("../utlis/ApiResponse");
 const ApiError = require("../utlis/ApiError");
-const moment=require('moment-timezone')
 
 /**
  * PLACE ORDER (TRANSACTION SAFE)
@@ -174,6 +173,84 @@ const getOrderById = async (req, res, next) => {
   }
 };
 
+const getAllOrdersAdmin = async (req, res, next) => {
+  try {
+    let { page = 1, limit = 20, status, paymentStatus } = req.query;
+
+    page = parseInt(page, 10);
+    limit = parseInt(limit, 10);
+
+    if (Number.isNaN(page) || page < 1) page = 1;
+    if (Number.isNaN(limit) || limit < 1 || limit > 100) limit = 20;
+
+    const filter = {};
+
+    if (status) {
+      filter.status = status;
+    }
+
+    if (paymentStatus) {
+      filter.paymentStatus = paymentStatus;
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [orders, total, summary] = await Promise.all([
+      Order.find(filter)
+        .populate("userId", "name email role")
+        .populate("restaurantId", "name location")
+        .populate("items.menuItemId", "name price")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Order.countDocuments(filter),
+      Order.aggregate([
+        {
+          $group: {
+            _id: null,
+            totalOrders: { $sum: 1 },
+            activeOrders: {
+              $sum: {
+                $cond: [{ $in: ["$status", ["placed", "preparing"]] }, 1, 0],
+              },
+            },
+            deliveredOrders: {
+              $sum: { $cond: [{ $eq: ["$status", "delivered"] }, 1, 0] },
+            },
+            cancelledOrders: {
+              $sum: { $cond: [{ $eq: ["$status", "cancelled"] }, 1, 0] },
+            },
+            pendingPayments: {
+              $sum: { $cond: [{ $eq: ["$paymentStatus", "pending"] }, 1, 0] },
+            },
+          },
+        },
+      ]),
+    ]);
+
+    return res.status(200).json(
+      new ApiResponse(200, "Admin orders fetched", {
+        data: orders,
+        pagination: {
+          currentPage: page,
+          totalPages: Math.ceil(total / limit),
+          totalItems: total,
+          itemsPerPage: limit,
+        },
+        summary: summary[0] || {
+          totalOrders: 0,
+          activeOrders: 0,
+          deliveredOrders: 0,
+          cancelledOrders: 0,
+          pendingPayments: 0,
+        },
+      })
+    );
+  } catch (err) {
+    next(err);
+  }
+};
+
 /**
  * UPDATE ORDER STATUS (WITH VALID TRANSITIONS)
  */
@@ -197,9 +274,10 @@ const updateOrderStatus = async (req, res, next) => {
     }
 
     const validTransitions = {
-      placed: ["preparing"],
-      preparing: ["delivered"],
+      placed: ["preparing", "cancelled"],
+      preparing: ["delivered", "cancelled"],
       delivered: [],
+      cancelled: [],
     };
 
     if (!validTransitions[order.status].includes(status)) {
@@ -244,6 +322,7 @@ const getUserOrders = async (req, res, next) => {
 module.exports = {
   placeOrder,
   getOrderById,
+  getAllOrdersAdmin,
   updateOrderStatus,
   getUserOrders
 };

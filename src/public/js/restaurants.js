@@ -97,13 +97,20 @@ const renderRestaurants = (restaurants) => {
   container.innerHTML = restaurants.map(r => {
     const cuisineList = Array.isArray(r.cuisine) ? r.cuisine : [];
     const rating = r.rating?.toFixed(1) || "4.0";
-    const firstLetter = r.name?.charAt(0) || 'R';
+    const primaryCuisine = cuisineList[0] || "Multi Cuisine";
+    const cuisinePreview = cuisineList.slice(0, 2).join(" • ") || "Chef specials";
 
     return `
       <div class="restaurant-card" onclick="goToRestaurant('${r._id}')">
-        <div class="restaurant-image">
-          <div class="restaurant-image-placeholder">${firstLetter}</div>
-          ${r.offer ? `<div class="restaurant-offers"><span class="offer-badge">${r.offer}</span></div>` : ''}
+        <div class="restaurant-image restaurant-image-rich">
+          <div class="restaurant-image-glow"></div>
+          <div class="restaurant-image-pattern"></div>
+          <div class="restaurant-media-copy">
+            <span class="restaurant-media-chip">${primaryCuisine}</span>
+            <strong>${r.location || "Fresh delivery"}</strong>
+            <small>${cuisinePreview}</small>
+          </div>
+          ${r.offer ? `<div class="restaurant-offers"><span class="offer-badge">${r.offer}</span></div>` : `<div class="restaurant-offers"><span class="offer-badge">Fast Delivery</span></div>`}
         </div>
         <div class="restaurant-content">
           <div class="restaurant-header">

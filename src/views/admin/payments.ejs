@@ -1,7 +1,36 @@
 <%- include("../partials/header") %>
-<section class="container" style="padding: 40px 0;">
-  <h2 style="font-size:24px;font-weight:700;margin-bottom:24px;">💳 Payments</h2>
-  <div id="payments"></div>
+
+<section class="admin-shell">
+  <div class="container admin-container">
+    <div class="admin-page-head">
+      <div>
+        <span class="admin-eyebrow">Finance Operations</span>
+        <h1>Payments</h1>
+        <p>Track payment health across the platform, review transactions, and trigger refunds for completed orders when needed.</p>
+      </div>
+    </div>
+
+    <div id="paymentSummary" class="admin-stat-grid"></div>
+
+    <div class="admin-panel">
+      <div class="admin-panel-head">
+        <div>
+          <span class="admin-panel-kicker">Transactions</span>
+          <h2>Recent payment activity</h2>
+        </div>
+        <div class="toolbar-inline">
+          <select id="paymentPageSize">
+            <option value="5">5 / page</option>
+            <option value="10" selected>10 / page</option>
+            <option value="20">20 / page</option>
+          </select>
+        </div>
+      </div>
+      <div id="paymentsList" class="admin-feed"></div>
+      <div id="paymentsPagination" class="pagination-bar"></div>
+    </div>
+  </div>
 </section>
+
 <%- include("../partials/footer") %>
-<script src="/admin/payments.js"></script>
+<script src="/js/admin/payments.js"></script>

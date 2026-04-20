@@ -25,6 +25,7 @@ const revenueController = async (req, res, next) => {
           _id: "$restaurantId",
           totalRevenue: { $sum: "$totalAmount" },
           totalOrders: { $sum: 1 },
+          averageOrderValue: { $avg: "$totalAmount" },
         },
       },
       {
@@ -43,6 +44,7 @@ const revenueController = async (req, res, next) => {
           restaurantName: "$restaurant.name",
           totalRevenue: 1,
           totalOrders: 1,
+          averageOrderValue: { $round: ["$averageOrderValue", 2] },
         },
       },
       { $sort: { totalRevenue: -1 } },

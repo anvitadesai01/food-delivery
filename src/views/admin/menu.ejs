@@ -1,7 +1,88 @@
 <%- include("../partials/header") %>
-<section class="container" style="padding: 40px 0;">
-  <h2 style="font-size:24px;font-weight:700;margin-bottom:24px;">📋 Menu Items</h2>
-  <div id="menu" class="menu-grid"></div>
+
+<section class="admin-shell">
+  <div class="container admin-container">
+    <div class="admin-page-head">
+      <div>
+        <span class="admin-eyebrow">Catalog Control</span>
+        <h1>Menu Management</h1>
+        <p>Keep menu items accurate with clear pricing, stock visibility, and restaurant mapping for every listing.</p>
+      </div>
+    </div>
+
+    <div class="admin-grid admin-grid-2">
+      <div class="admin-panel">
+        <div class="admin-panel-head">
+          <div>
+            <span class="admin-panel-kicker">Create / Edit</span>
+            <h2>Menu item details</h2>
+          </div>
+        </div>
+        <form id="menuForm" class="admin-form">
+          <input type="hidden" id="menuItemId" />
+          <div class="form-grid">
+            <label class="form-field">
+              <span>Restaurant</span>
+              <select id="menuRestaurant" required></select>
+            </label>
+            <label class="form-field">
+              <span>Item Name</span>
+              <input id="menuName" type="text" placeholder="Paneer Tikka Pizza" required minlength="2" maxlength="100" />
+            </label>
+            <label class="form-field">
+              <span>Price</span>
+              <input id="menuPrice" type="number" min="1" placeholder="299" required />
+            </label>
+            <label class="form-field">
+              <span>Stock</span>
+              <input id="menuStock" type="number" min="0" placeholder="25" required />
+            </label>
+            <label class="form-field">
+              <span>Availability</span>
+              <select id="menuAvailability">
+                <option value="true">Available</option>
+                <option value="false">Unavailable</option>
+              </select>
+            </label>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">Save Menu Item</button>
+            <button type="button" id="menuReset" class="btn-outline">Reset</button>
+          </div>
+          <p id="menuMessage" class="admin-inline-message"></p>
+        </form>
+      </div>
+
+      <div class="admin-panel">
+        <div class="admin-panel-head">
+          <div>
+            <span class="admin-panel-kicker">Inventory Snapshot</span>
+            <h2>Catalog health</h2>
+          </div>
+        </div>
+        <div id="menuSummary" class="admin-stat-grid admin-stat-grid-compact"></div>
+      </div>
+    </div>
+
+    <div class="admin-panel">
+      <div class="admin-panel-head">
+        <div>
+          <span class="admin-panel-kicker">All Items</span>
+          <h2>Menu inventory list</h2>
+        </div>
+        <div class="toolbar-inline">
+          <select id="menuPageSize">
+            <option value="5">5 / page</option>
+            <option value="10" selected>10 / page</option>
+            <option value="20">20 / page</option>
+          </select>
+        </div>
+      </div>
+      <div id="menuList" class="admin-table-wrap"></div>
+      <div id="menuPagination" class="pagination-bar"></div>
+    </div>
+  </div>
 </section>
+
 <%- include("../partials/footer") %>
 <script src="/js/admin/menu.js"></script>

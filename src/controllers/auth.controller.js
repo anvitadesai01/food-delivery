@@ -3,6 +3,22 @@ const { generateToken } = require("../utlis/jwt");
 const ApiResponse = require("../utlis/ApiResponse");
 const ApiError = require("../utlis/ApiError");
 
+const AUTH_COOKIE_OPTIONS = {
+  httpOnly: true,
+  sameSite: "lax",
+  secure: process.env.NODE_ENV === "production",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+};
+
+const sanitizeUser = (user) => {
+  const userObj = user.toObject ? user.toObject() : { ...user };
+  delete userObj.password;
+  return userObj;
+};
+
+const buildRedirectPath = (user) =>
+  user.role === "admin" ? "/admin/dashboard" : "/";
+
 // REGISTER
 const registerUser = async (req, res, next) => {
   try {
@@ -17,23 +33,23 @@ const registerUser = async (req, res, next) => {
     const user = await User.create({ name, email, password });
 
     const token = generateToken(user);
+    const userObj = sanitizeUser(user);
+    const redirectTo = buildRedirectPath(userObj);
+    res.cookie("token", token, AUTH_COOKIE_OPTIONS);
 
     const isApi = req.originalUrl.startsWith("/api");
 
     if (isApi) {
-      const userObj = user.toObject();
-      delete userObj.password;
-
       return res.json(
         new ApiResponse(201, "User registered", {
           user: userObj,
           token,
+          redirectTo,
         })
       );
     }
 
-    // 🔥 WEB FLOW
-    res.redirect("/login");
+    res.redirect(redirectTo);
   } catch (err) {
     next(err);
   }
@@ -56,27 +72,41 @@ const loginUser = async (req, res, next) => {
     }
 
     const token = generateToken(user);
+    const userObj = sanitizeUser(user);
+    const redirectTo = buildRedirectPath(userObj);
+    res.cookie("token", token, AUTH_COOKIE_OPTIONS);
 
-    // 🔥 API vs WEB
     const isApi = req.originalUrl.startsWith("/api");
 
     if (isApi) {
-      const userObj = user.toObject();
-      delete userObj.password;
-
       return res.json(
         new ApiResponse(200, "Login successful", {
           user: userObj,
           token,
+          redirectTo,
         })
       );
     }
 
-    // 🔥 WEB FLOW
-    res.redirect("/");
+    res.redirect(redirectTo);
   } catch (err) {
     next(err);
   }
 };
 
-module.exports = { registerUser, loginUser };
+const getCurrentUser = async (req, res) => {
+  return res.json(
+    new ApiResponse(200, "Current user fetched", {
+      user: req.user,
+      redirectTo: buildRedirectPath(req.user),
+    })
+  );
+};
+
+const logoutUser = async (req, res) => {
+  res.clearCookie("token");
+
+  return res.json(new ApiResponse(200, "Logout successful"));
+};
+
+module.exports = { registerUser, loginUser, getCurrentUser, logoutUser };

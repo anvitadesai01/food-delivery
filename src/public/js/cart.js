@@ -132,25 +132,25 @@ const placeOrder = async () => {
         const data = await res.json();
 
         if (!data.success) {
-            alert(data.message);
+            await window.showAppAlert({
+                title: "Order failed",
+                text: data.message,
+                icon: "error",
+            });
             return;
         }
 
-        showToast("Order placed successfully! 🎉");
+        window.showAppToast({ title: "Order placed successfully", icon: "success" });
         setTimeout(() => {
             window.location.href = `/orders/${data.data._id}`;
         }, 1500);
 
     } catch (err) {
         console.error(err);
-        alert("Something went wrong");
+        window.showAppAlert({
+            title: "Something went wrong",
+            text: "Please try again.",
+            icon: "error",
+        });
     }
-};
-
-const showToast = (message) => {
-    const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
 };

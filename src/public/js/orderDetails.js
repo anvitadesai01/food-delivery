@@ -14,7 +14,11 @@ const loadOrder = async () => {
         const data = await res.json();
 
         if (!data.success) {
-            alert(data.message);
+            await window.showAppAlert({
+                title: "Unable to load order",
+                text: data.message,
+                icon: "error",
+            });
             return;
         }
 

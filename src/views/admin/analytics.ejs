@@ -1,7 +1,74 @@
 <%- include("../partials/header") %>
-<section class="container" style="padding: 40px 0;">
-  <h2 style="font-size:24px;font-weight:700;margin-bottom:24px;">📊 Analytics</h2>
-  <div id="analytics" class="restaurant-grid"></div>
+
+<section class="admin-shell">
+  <div class="container admin-container">
+    <div class="admin-page-head">
+      <div>
+        <span class="admin-eyebrow">Deep Analytics</span>
+        <h1>Business Analytics</h1>
+        <p>Understand revenue concentration, customer demand, and monthly order trends across the platform.</p>
+      </div>
+    </div>
+
+    <div id="analyticsSummary" class="admin-stat-grid"></div>
+
+    <div class="admin-grid admin-grid-2">
+      <div class="admin-panel">
+        <div class="admin-panel-head">
+          <div>
+            <span class="admin-panel-kicker">Revenue Curve</span>
+            <h2>Monthly revenue line</h2>
+          </div>
+        </div>
+        <div id="analyticsLineChart" class="chart-surface"></div>
+      </div>
+
+      <div class="admin-panel">
+        <div class="admin-panel-head">
+          <div>
+            <span class="admin-panel-kicker">Status Mix</span>
+            <h2>Orders vs payments</h2>
+          </div>
+        </div>
+        <div id="analyticsStatusMix" class="ring-grid"></div>
+      </div>
+    </div>
+
+    <div class="admin-grid admin-grid-2">
+      <div class="admin-panel">
+        <div class="admin-panel-head">
+          <div>
+            <span class="admin-panel-kicker">Revenue</span>
+            <h2>Restaurant revenue leaderboard</h2>
+          </div>
+        </div>
+        <div id="revenueBars" class="bar-list"></div>
+        <div id="revenueTable" class="admin-table-wrap"></div>
+      </div>
+
+      <div class="admin-panel">
+        <div class="admin-panel-head">
+          <div>
+            <span class="admin-panel-kicker">Demand</span>
+            <h2>Most ordered items</h2>
+          </div>
+        </div>
+        <div id="itemsBars" class="bar-list"></div>
+        <div id="itemsTable" class="admin-table-wrap"></div>
+      </div>
+    </div>
+
+    <div class="admin-panel">
+      <div class="admin-panel-head">
+        <div>
+          <span class="admin-panel-kicker">Monthly Performance</span>
+          <h2>Trendline for the current business year</h2>
+        </div>
+      </div>
+      <div id="monthlyTrend" class="chart-surface"></div>
+    </div>
+  </div>
 </section>
+
 <%- include("../partials/footer") %>
 <script src="/js/admin/analytics.js"></script>

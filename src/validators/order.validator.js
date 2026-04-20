@@ -18,11 +18,11 @@ const createOrderSchema = Joi.object({
 
 const updateOrderStatusSchema = Joi.object({
   status: Joi.string()
-    .valid("preparing", "delivered")
+    .valid("preparing", "delivered", "cancelled")
     .required()
     .messages({
       "any.required": "Order status is required",
-      "any.only": "Status must be either 'preparing' or 'delivered'",
+      "any.only": "Status must be one of 'preparing', 'delivered' or 'cancelled'",
       "string.base": "Status must be a string",
       "string.empty": "Status cannot be empty",
     }),

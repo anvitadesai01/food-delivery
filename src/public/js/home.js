@@ -91,12 +91,18 @@ async function loadRestaurants() {
   container.innerHTML = list.map(r => {
     const cuisineList = Array.isArray(r.cuisine) ? r.cuisine : [];
     const rating = r.rating?.toFixed(1) || "4.0";
-    const firstLetter = r.name?.charAt(0) || "R";
+    const primaryCuisine = cuisineList[0] || "Multi Cuisine";
     return `
       <div class="restaurant-card" onclick="goToRestaurant('${r._id}')">
-        <div class="restaurant-image">
-          <div class="restaurant-image-placeholder">${firstLetter}</div>
-          ${r.offer ? `<div class="restaurant-offers"><span class="offer-badge">🎉 ${r.offer}</span></div>` : ""}
+        <div class="restaurant-image restaurant-image-rich">
+          <div class="restaurant-image-glow"></div>
+          <div class="restaurant-image-pattern"></div>
+          <div class="restaurant-media-copy">
+            <span class="restaurant-media-chip">${primaryCuisine}</span>
+            <strong>${r.location || "Fast service"}</strong>
+            <small>${cuisineList.slice(0, 2).join(" • ") || "Chef specials"}</small>
+          </div>
+          ${r.offer ? `<div class="restaurant-offers"><span class="offer-badge">🎉 ${r.offer}</span></div>` : `<div class="restaurant-offers"><span class="offer-badge">Top Rated</span></div>`}
         </div>
         <div class="restaurant-content">
           <div class="restaurant-header">
@@ -106,6 +112,10 @@ async function loadRestaurants() {
           <div class="restaurant-meta"><span>📍 ${r.location || "Location"}</span></div>
           <div class="restaurant-cuisine">
             ${cuisineList.slice(0, 3).map(c => `<span class="cuisine-tag">${c}</span>`).join("")}
+          </div>
+          <div class="restaurant-info-row">
+            <div class="info-item"><span class="info-bullet"></span> Trending now</div>
+            <div class="info-item"><span class="info-bullet"></span> Quick delivery</div>
           </div>
         </div>
       </div>
@@ -140,19 +150,27 @@ async function loadDishes() {
 
     container.innerHTML = dishes.slice(0, 8).map(dish => {
       const restaurantName = dish.restaurantId?.name || "Restaurant";
-      const firstLetter = dish.name?.charAt(0) || "D";
+      const restaurantLocation = dish.restaurantId?.location || "Fresh kitchen";
       return `
         <div class="restaurant-card" onclick="goToRestaurant('${dish.restaurantId?._id}')">
-          <div class="restaurant-image">
-            <div class="restaurant-image-placeholder" style="font-size:48px;">${firstLetter}</div>
+          <div class="restaurant-image restaurant-image-rich restaurant-image-dish">
+            <div class="restaurant-image-glow"></div>
+            <div class="restaurant-image-pattern"></div>
+            <div class="restaurant-media-copy">
+              <span class="restaurant-media-chip">Popular Dish</span>
+              <strong>${restaurantName}</strong>
+              <small>${restaurantLocation}</small>
+            </div>
+           
           </div>
           <div class="restaurant-content">
             <div class="restaurant-header">
               <div class="restaurant-name" style="font-size:16px;">${dish.name}</div>
+              <div class="restaurant-rating price-pill">₹${dish.price}</div>
             </div>
             <div class="restaurant-meta"><span>🍴 ${restaurantName}</span></div>
             <div class="restaurant-info-row">
-              <div class="info-item" style="font-weight:700;color:var(--primary);font-size:16px;">₹${dish.price}</div>
+              <div class="info-item"><span class="info-bullet"></span> Order now</div>
             </div>
           </div>
         </div>

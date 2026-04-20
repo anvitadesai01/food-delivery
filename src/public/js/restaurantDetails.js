@@ -11,14 +11,18 @@ const loadRestaurant = async () => {
         const data = await res.json();
 
         const r = data.data;
-        const firstLetter = r.name?.charAt(0) || 'R';
+        const cuisinePreview = (r.cuisine || []).slice(0, 2).join(" • ") || "Signature menu";
 
         document.getElementById("restaurantName").innerHTML = `
-            <span style="display: inline-flex; align-items: center; gap: 20px;">
-                <span style="font-size: 64px; width: 80px; height: 80px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); border-radius: var(--radius-md); display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 36px; font-weight: 800;">
-                    ${firstLetter}
+            <span class="restaurant-title-shell">
+                <span class="restaurant-hero-media">
+                    <span class="restaurant-hero-glow"></span>
+                    <span class="restaurant-hero-copy">
+                        <span class="restaurant-media-chip">${r.location || "Premium Kitchen"}</span>
+                        <strong>${cuisinePreview}</strong>
+                    </span>
                 </span>
-                ${r.name}
+                <span>${r.name}</span>
             </span>
         `;
 
@@ -139,6 +143,10 @@ const loadMenu = async () => {
 
         container.innerHTML = paginatedMenu.map(item => `
             <div class="menu-card">
+                <div class="menu-card-art">
+                    <span class="menu-card-chip">${item.availability ? "Ready to order" : "Unavailable"}</span>
+                    <strong>${item.price ? `₹${item.price}` : "Chef special"}</strong>
+                </div>
                 <div class="menu-item-header">
                     <div class="menu-item-name">${item.name}</div>
                     <div class="menu-item-price"><span>₹</span>${item.price}</div>
@@ -172,7 +180,11 @@ const addToCart = async (menuItemId) => {
         const token = localStorage.getItem("token");
 
         if (!token) {
-            alert("Please login to add items to cart");
+            await window.showAppAlert({
+                title: "Login Required",
+                text: "Please login to add items to cart.",
+                icon: "warning",
+            });
             window.location.href = "/login";
             return;
         }
@@ -192,25 +204,25 @@ const addToCart = async (menuItemId) => {
         const data = await res.json();
 
         if (!data.success) {
-            alert(data.message);
+            await window.showAppAlert({
+                title: "Could not add item",
+                text: data.message,
+                icon: "error",
+            });
             return;
         }
 
-        showToast("Added to cart! 🛒");
+        window.showAppToast({ title: "Added to cart", icon: "success" });
         location.reload();
 
     } catch (err) {
         console.error(err);
-        alert("Something went wrong");
+        window.showAppAlert({
+            title: "Something went wrong",
+            text: "Please try again.",
+            icon: "error",
+        });
     }
-};
-
-const showToast = (message) => {
-    const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
 };
 
 document.addEventListener("DOMContentLoaded", () => {

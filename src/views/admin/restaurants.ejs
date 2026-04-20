@@ -1,10 +1,81 @@
 <%- include("../partials/header") %>
-<section class="container" style="padding: 40px 0;">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
-    <h2 style="font-size:24px;font-weight:700;">🍽️ Restaurants</h2>
-    <button class="btn-primary" onclick="createRestaurant()">+ Add Restaurant</button>
+
+<section class="admin-shell">
+  <div class="container admin-container">
+    <div class="admin-page-head">
+      <div>
+        <span class="admin-eyebrow">Partner Management</span>
+        <h1>Restaurants</h1>
+        <p>Create, update, and remove restaurant partners while keeping the marketplace catalog clean and accurate.</p>
+      </div>
+    </div>
+
+    <div class="admin-grid admin-grid-2">
+      <div class="admin-panel">
+        <div class="admin-panel-head">
+          <div>
+            <span class="admin-panel-kicker">Create / Edit</span>
+            <h2>Restaurant details</h2>
+          </div>
+        </div>
+        <form id="restaurantForm" class="admin-form">
+          <input type="hidden" id="restaurantId" />
+          <div class="form-grid">
+            <label class="form-field">
+              <span>Name</span>
+              <input id="restaurantName" type="text" placeholder="Enter restaurant name" required minlength="2" maxlength="100" />
+            </label>
+            <label class="form-field">
+              <span>Location</span>
+              <input id="restaurantLocation" type="text" placeholder="Enter location" required minlength="2" maxlength="100" />
+            </label>
+            <label class="form-field form-field-full">
+              <span>Cuisines</span>
+              <input id="restaurantCuisine" type="text" placeholder="Italian, Indian, Cafe" required />
+            </label>
+            <label class="form-field">
+              <span>Rating</span>
+              <input id="restaurantRating" type="number" min="0" max="5" step="0.1" placeholder="4.5" />
+            </label>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">Save Restaurant</button>
+            <button type="button" id="restaurantReset" class="btn-outline">Reset</button>
+          </div>
+          <p id="restaurantMessage" class="admin-inline-message"></p>
+        </form>
+      </div>
+
+      <div class="admin-panel">
+        <div class="admin-panel-head">
+          <div>
+            <span class="admin-panel-kicker">Overview</span>
+            <h2>Restaurant portfolio</h2>
+          </div>
+        </div>
+        <div id="restaurantSummary" class="admin-stat-grid admin-stat-grid-compact"></div>
+      </div>
+    </div>
+
+    <div class="admin-panel">
+      <div class="admin-panel-head">
+        <div>
+          <span class="admin-panel-kicker">All Partners</span>
+          <h2>Restaurant directory</h2>
+        </div>
+        <div class="toolbar-inline">
+          <select id="restaurantPageSize">
+            <option value="5">5 / page</option>
+            <option value="10" selected>10 / page</option>
+            <option value="20">20 / page</option>
+          </select>
+        </div>
+      </div>
+      <div id="restaurantList" class="admin-table-wrap"></div>
+      <div id="restaurantPagination" class="pagination-bar"></div>
+    </div>
   </div>
-  <div id="list" class="restaurant-grid"></div>
 </section>
+
 <%- include("../partials/footer") %>
 <script src="/js/admin/restaurants.js"></script>

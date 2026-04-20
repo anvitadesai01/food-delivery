@@ -96,29 +96,30 @@ const renderMenuItems = (menuItems) => {
   container.innerHTML = menuItems.map(item => {
     const restaurantName = item.restaurantId?.name || 'Restaurant';
     const restaurantLocation = item.restaurantId?.location || '';
-    const firstLetter = item.name?.charAt(0) || 'D';
+    const cuisineLabel = "";
     
     return `
       <div class="restaurant-card" onclick="goToRestaurant('${item.restaurantId?._id}')">
-        <div class="restaurant-image">
-          <div class="restaurant-image-placeholder" style="font-size: 48px;">${firstLetter}</div>
-          ${item.availability ? '<div class="restaurant-offers"><span class="offer-badge">✅ Available</span></div>' : ''}
+        <div class="restaurant-image restaurant-image-rich restaurant-image-dish">
+          <div class="restaurant-image-glow"></div>
+          <div class="restaurant-image-pattern"></div>
+          <div class="restaurant-media-copy">
+            <span class="restaurant-media-chip">${item.availability ? "Available" : "Out of stock"}</span>
+            <strong>${restaurantName}</strong>
+            <small>${cuisineLabel}</small>
+          </div>
+          <div class="restaurant-offers"><span class="offer-badge">${item.availability ? "Chef Pick" : "Unavailable"}</span></div>
         </div>
         <div class="restaurant-content">
           <div class="restaurant-header">
             <div class="restaurant-name">${item.name}</div>
-          </div>
-          <div class="restaurant-meta">
-            <span>🍴 ${restaurantName}</span>
+            <div class="restaurant-rating price-pill">₹${item.price}</div>
           </div>
           ${restaurantLocation ? `
             <div class="restaurant-meta">
               <span>📍 ${restaurantLocation}</span>
             </div>
           ` : ''}
-          <div class="restaurant-info-row">
-            <div class="info-item" style="font-size: 18px; font-weight: 700; color: var(--primary);">₹${item.price}</div>
-          </div>
           <div style="margin-top: 12px;">
             <button onclick="event.stopPropagation(); addToCart('${item._id}')" class="add-btn" ${item.availability ? '' : 'disabled'}>
               ${item.availability ? 'Add +' : 'Unavailable'}
@@ -141,7 +142,11 @@ const addToCart = async (menuItemId) => {
     const token = localStorage.getItem("token");
 
     if (!token) {
-      alert("Please login to add items to cart");
+      await window.showAppAlert({
+        title: "Login Required",
+        text: "Please login to add items to cart.",
+        icon: "warning",
+      });
       window.location.href = "/login";
       return;
     }
@@ -161,23 +166,23 @@ const addToCart = async (menuItemId) => {
     const data = await res.json();
 
     if (!data.success) {
-      alert(data.message);
+      await window.showAppAlert({
+        title: "Could not add item",
+        text: data.message,
+        icon: "error",
+      });
       return;
     }
 
-    showToast("Added to cart! 🛒");
+    window.showAppToast({ title: "Added to cart", icon: "success" });
   } catch (err) {
     console.error(err);
-    alert("Something went wrong");
+    window.showAppAlert({
+      title: "Something went wrong",
+      text: "Please try again.",
+      icon: "error",
+    });
   }
-};
-
-const showToast = (message) => {
-  const toast = document.createElement('div');
-  toast.className = 'toast';
-  toast.textContent = message;
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 3000);
 };
 
 const loadMenu = async () => {

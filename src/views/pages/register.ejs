@@ -11,7 +11,7 @@
             <form class="auth-form" id="registerForm">
                 <div class="form-group">
                     <label for="name">👤 Full Name</label>
-                    <input type="text" id="name" placeholder="Enter your name" required />
+                    <input type="text" id="name" placeholder="Enter your name" required minlength="2" maxlength="100" />
                 </div>
 
                 <div class="form-group">
@@ -21,7 +21,13 @@
 
                 <div class="form-group">
                     <label for="password">🔐 Password</label>
-                    <input type="password" id="password" placeholder="Create a password" required minlength="6" />
+                    <input type="password" id="password" placeholder="Create a password" required minlength="8" maxlength="30" />
+                    <small class="form-helper">Use 8-30 characters with uppercase, lowercase, number, and special character.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">🔒 Confirm Password</label>
+                    <input type="password" id="confirmPassword" placeholder="Confirm your password" required minlength="8" maxlength="30" />
                 </div>
 
                 <button type="submit" class="btn-primary">

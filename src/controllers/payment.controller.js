@@ -6,6 +6,23 @@ const ApiResponse = require("../utlis/ApiResponse");
 const ApiError = require("../utlis/ApiError");
 const redisClient = require("../config/redis");
 
+const invalidatePaymentCache = async () => {
+    let cursor = "0";
+
+    do {
+        const [nextCursor, keys] = await redisClient.scan(cursor, {
+            MATCH: "payments:*",
+            COUNT: 100,
+        });
+
+        cursor = nextCursor;
+
+        if (keys.length) {
+            await redisClient.del(keys);
+        }
+    } while (cursor !== "0");
+};
+
 /**
  * GET PAYMENT BY ORDER ID
  */
@@ -56,6 +73,7 @@ const retryPayment = async (req, res, next) => {
 
         order.paymentStatus = "pending";
         await order.save();
+        await invalidatePaymentCache();
 
         // PUSH AGAIN TO QUEUE
         await paymentQueue.add(
@@ -80,47 +98,86 @@ const retryPayment = async (req, res, next) => {
 
 const getAllPayments = async (req, res, next) => {
     try {
-        //  pagination 
         let { page = 1, limit = 10 } = req.query;
 
-        page = parseInt(page);
-        limit = parseInt(limit);
+        page = parseInt(page, 10);
+        limit = parseInt(limit, 10);
+
+        if (Number.isNaN(page) || page < 1) page = 1;
+        if (Number.isNaN(limit) || limit < 1 || limit > 100) limit = 10;
 
         const skip = (page - 1) * limit;
-
-        //  custom cache key
         const cacheKey = `payments:page:${page}:limit:${limit}`;
-
-        // 🔍 1. Check cache
         const cachedData = await redisClient.get(cacheKey);
 
         if (cachedData) {
-            return res.status(200).json({
-                success: true,
-                message: "Payments fetched (cache)",
-                data: JSON.parse(cachedData),
-            });
+            return res
+                .status(200)
+                .json(new ApiResponse(200, "Payments fetched (cache)", JSON.parse(cachedData)));
         }
 
-        // Cache miss → DB call
-        const payments = await Payment.find()
-            .populate("orderId")
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit);
+        const [payments, total, summary] = await Promise.all([
+            Payment.find()
+                .populate({
+                    path: "orderId",
+                    select: "totalAmount status paymentStatus createdAt",
+                    populate: [
+                        { path: "restaurantId", select: "name" },
+                        { path: "userId", select: "name email" },
+                    ],
+                })
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit),
+            Payment.countDocuments(),
+            Payment.aggregate([
+                {
+                    $group: {
+                        _id: null,
+                        totalPayments: { $sum: 1 },
+                        successCount: {
+                            $sum: { $cond: [{ $eq: ["$status", "success"] }, 1, 0] },
+                        },
+                        pendingCount: {
+                            $sum: { $cond: [{ $eq: ["$status", "pending"] }, 1, 0] },
+                        },
+                        failedCount: {
+                            $sum: { $cond: [{ $eq: ["$status", "failed"] }, 1, 0] },
+                        },
+                        refundedCount: {
+                            $sum: { $cond: [{ $eq: ["$status", "refunded"] }, 1, 0] },
+                        },
+                    },
+                },
+            ]),
+        ]);
 
-        //  2. Store in Redis (TTL = 60 sec)
+        const payload = {
+            data: payments,
+            pagination: {
+                currentPage: page,
+                totalPages: Math.ceil(total / limit),
+                totalItems: total,
+                itemsPerPage: limit,
+            },
+            summary: summary[0] || {
+                totalPayments: 0,
+                successCount: 0,
+                pendingCount: 0,
+                failedCount: 0,
+                refundedCount: 0,
+            },
+        };
+
         await redisClient.setEx(
             cacheKey,
             60,
-            JSON.stringify(payments)
+            JSON.stringify(payload)
         );
 
-        return res.status(200).json({
-            success: true,
-            message: "Payments fetched",
-            data: payments,
-        });
+        return res
+            .status(200)
+            .json(new ApiResponse(200, "Payments fetched", payload));
 
     } catch (err) {
         next(err);
@@ -163,6 +220,7 @@ const refundPayment = async (req, res, next) => {
         await Order.findByIdAndUpdate(orderId, {
             paymentStatus: "refunded",
         });
+        await invalidatePaymentCache();
 
         return res
             .status(200)

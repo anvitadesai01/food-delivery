@@ -1,62 +1,214 @@
-const token = localStorage.getItem("token");
+const orderToken = localStorage.getItem("token");
+const orderState = {
+  page: 1,
+  limit: 10,
+};
+
+const orderCurrency = (value = 0) =>
+  new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(value);
+
+const nextActions = {
+  placed: ["preparing", "cancelled"],
+  preparing: ["delivered", "cancelled"],
+  delivered: [],
+  cancelled: [],
+};
+
+const renderPagination = (pagination) => {
+  const container = document.getElementById("ordersPagination");
+  const currentPage = pagination?.currentPage || 1;
+  const totalPages = pagination?.totalPages || 1;
+  const totalItems = pagination?.totalItems || 0;
+
+  if (totalPages <= 1) {
+    container.innerHTML = totalItems ? `<span class="pagination-summary">${totalItems} records</span>` : "";
+    return;
+  }
+
+  const pages = [];
+  const pushPage = (page) => {
+    pages.push(`<button class="pagination-btn ${page === currentPage ? "active" : ""}" onclick="changeOrderPage(${page})">${page}</button>`);
+  };
+  const pushEllipsis = (key) => {
+    pages.push(`<span class="pagination-ellipsis" data-key="${key}">...</span>`);
+  };
+
+  pushPage(1);
+
+  if (currentPage > 3) {
+    pushEllipsis("left");
+  }
+
+  for (
+    let page = Math.max(2, currentPage - 1);
+    page <= Math.min(totalPages - 1, currentPage + 1);
+    page += 1
+  ) {
+    pushPage(page);
+  }
+
+  if (currentPage < totalPages - 2) {
+    pushEllipsis("right");
+  }
+
+  if (totalPages > 1) {
+    pushPage(totalPages);
+  }
+
+  container.innerHTML = `
+    <span class="pagination-summary">Showing page ${currentPage} of ${totalPages}</span>
+    <div class="pagination-actions">
+      <button class="pagination-btn" ${currentPage === 1 ? "disabled" : ""} onclick="changeOrderPage(${currentPage - 1})">Prev</button>
+      ${pages.join("")}
+      <button class="pagination-btn" ${currentPage === totalPages ? "disabled" : ""} onclick="changeOrderPage(${currentPage + 1})">Next</button>
+    </div>
+  `;
+};
+
+const renderOrderSummary = (summary = {}) => {
+  document.getElementById("orderSummary").innerHTML = [
+    { label: "Total Orders", value: summary.totalOrders || 0 },
+    { label: "Active Orders", value: summary.activeOrders || 0 },
+    { label: "Delivered", value: summary.deliveredOrders || 0 },
+    { label: "Pending Payments", value: summary.pendingPayments || 0 },
+  ]
+    .map(
+      (card) => `
+        <article class="admin-stat-card">
+          <span>${card.label}</span>
+          <strong>${card.value}</strong>
+          <small>Operational order signal</small>
+        </article>
+      `
+    )
+    .join("");
+};
 
 const loadOrders = async () => {
-  const container = document.getElementById("orders");
-  container.innerHTML = `<div class="loading"><div class="loading-spinner"></div></div>`;
+  const status = document.getElementById("orderStatusFilter").value;
+  const paymentStatus = document.getElementById("paymentStatusFilter").value;
+  const params = new URLSearchParams({
+    page: String(orderState.page),
+    limit: String(orderState.limit),
+  });
+
+  if (status) params.set("status", status);
+  if (paymentStatus) params.set("paymentStatus", paymentStatus);
+
   try {
-    const res = await fetch("/api/orders", {
-      headers: { Authorization: `Bearer ${token}` }
+    const response = await fetch(`/api/orders/admin/all?${params.toString()}`, {
+      headers: {
+        Authorization: `Bearer ${orderToken}`,
+      },
     });
-    const data = await res.json();
-    // response shape: { success, data: [...] } or { success, data: { data: [...] } }
-    const orders = data?.data?.data || data?.data || [];
-    if (!orders.length) {
-      container.innerHTML = `<p style="color:var(--text-muted);text-align:center;padding:40px;">No orders found.</p>`;
-      return;
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.message || "Failed to load orders");
     }
-    container.innerHTML = `<div class="orders-list">${orders.map(o => `
-      <div class="order-card">
-        <div class="order-header">
-          <div class="order-restaurant">
-            <div class="order-restaurant-image">${(o.restaurantId?.name || "R").charAt(0)}</div>
-            <div class="order-restaurant-info">
-              <h3>${o.restaurantId?.name || "Restaurant"}</h3>
-              <p>Order ID: ${o._id}</p>
-            </div>
-          </div>
-          <span class="order-status ${o.status?.toLowerCase().replace(/\s+/g,"-")}">${o.status}</span>
-        </div>
-        <div style="margin-top:12px;display:flex;align-items:center;gap:12px;">
-          <label style="font-size:14px;color:var(--text-muted);">Update status:</label>
-          <select onchange="updateStatus('${o._id}', this.value)" style="padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-white);color:var(--text-dark);font-family:inherit;">
-            <option value="pending" ${o.status==="pending"?"selected":""}>Pending</option>
-            <option value="confirmed" ${o.status==="confirmed"?"selected":""}>Confirmed</option>
-            <option value="preparing" ${o.status==="preparing"?"selected":""}>Preparing</option>
-            <option value="out for delivery" ${o.status==="out for delivery"?"selected":""}>Out for Delivery</option>
-            <option value="delivered" ${o.status==="delivered"?"selected":""}>Delivered</option>
-            <option value="cancelled" ${o.status==="cancelled"?"selected":""}>Cancelled</option>
-          </select>
-          <span style="font-weight:700;color:var(--primary);">₹${o.totalAmount || 0}</span>
-        </div>
-      </div>
-    `).join("")}</div>`;
-  } catch (err) {
-    container.innerHTML = `<p style="color:var(--danger);text-align:center;padding:40px;">Failed to load orders: ${err.message}</p>`;
+
+    const orders = result?.data?.data || [];
+    renderOrderSummary(result?.data?.summary || {});
+    renderPagination(result?.data?.pagination || {});
+    document.getElementById("ordersList").innerHTML = orders.length
+      ? orders
+          .map((order) => {
+            const actions = nextActions[order.status] || [];
+
+            return `
+              <article class="feed-card feed-card-large">
+                <div class="feed-card-main">
+                  <div>
+                    <strong>${order.restaurantId?.name || "Restaurant"}</strong>
+                    <p>${order.userId?.name || "Customer"} • ${order.userId?.email || "No email"}</p>
+                    <small>${new Date(order.createdAt).toLocaleString("en-IN")}</small>
+                  </div>
+                  <div class="feed-meta">
+                    <span class="status-badge status-${order.status}">${order.status}</span>
+                    <span class="status-badge status-${order.paymentStatus}">${order.paymentStatus}</span>
+                    <strong>${orderCurrency(order.totalAmount)}</strong>
+                  </div>
+                </div>
+                <div class="feed-card-sub">
+                  <span>${order.items?.length || 0} items</span>
+                  <span>Order ID: ${order._id}</span>
+                </div>
+                <div class="table-actions">
+                  ${
+                    actions.length
+                      ? actions
+                          .map(
+                            (action) => `
+                              <button class="btn-outline btn-small" onclick="updateOrderStatus('${order._id}', '${action}')">
+                                Mark as ${action}
+                              </button>
+                            `
+                          )
+                          .join("")
+                      : `<span class="admin-muted">No further actions</span>`
+                  }
+                </div>
+              </article>
+            `;
+          })
+          .join("")
+      : `<p class="admin-empty">No orders found for the selected filters.</p>`;
+  } catch (error) {
+    document.getElementById("ordersList").innerHTML = `<p class="admin-empty">${error.message}</p>`;
   }
 };
 
-const updateStatus = async (id, status) => {
+window.changeOrderPage = (page) => {
+  orderState.page = page;
+  loadOrders();
+};
+
+window.updateOrderStatus = async (id, status) => {
   try {
-    const res = await fetch(`/api/orders/${id}/status`, {
+    const response = await fetch(`/api/orders/${id}/status`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ status })
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${orderToken}`,
+      },
+      body: JSON.stringify({ status }),
     });
-    if (!res.ok) throw new Error("Update failed");
-  } catch (err) {
-    alert("Error: " + err.message);
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || "Failed to update order");
+    }
+
+    window.showAppToast({
+      title: `Order marked as ${status}`,
+      icon: "success",
+    });
     loadOrders();
+  } catch (error) {
+    window.showAppAlert({
+      title: "Update failed",
+      text: error.message,
+      icon: "error",
+    });
   }
 };
+
+document.getElementById("orderStatusFilter")?.addEventListener("change", () => {
+  orderState.page = 1;
+  loadOrders();
+});
+document.getElementById("paymentStatusFilter")?.addEventListener("change", () => {
+  orderState.page = 1;
+  loadOrders();
+});
+document.getElementById("orderPageSize")?.addEventListener("change", (event) => {
+  orderState.limit = Number(event.target.value);
+  orderState.page = 1;
+  loadOrders();
+});
 
 document.addEventListener("DOMContentLoaded", loadOrders);

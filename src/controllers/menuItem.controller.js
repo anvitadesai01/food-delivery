@@ -48,6 +48,76 @@ const getAllMenuItems = async (req, res, next) => {
   }
 };
 
+const getAdminMenuItems = async (req, res, next) => {
+  try {
+    let { page = 1, limit = 20, search, restaurantId, availability } = req.query;
+
+    page = parseInt(page, 10);
+    limit = parseInt(limit, 10);
+
+    if (Number.isNaN(page) || page < 1) page = 1;
+    if (Number.isNaN(limit) || limit < 1 || limit > 100) limit = 20;
+
+    const query = {};
+
+    if (search) {
+      query.name = { $regex: search, $options: "i" };
+    }
+
+    if (restaurantId) {
+      query.restaurantId = restaurantId;
+    }
+
+    if (availability === "true" || availability === "false") {
+      query.availability = availability === "true";
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [items, total, summary] = await Promise.all([
+      MenuItem.find(query)
+        .populate("restaurantId", "name location")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      MenuItem.countDocuments(query),
+      MenuItem.aggregate([
+        {
+          $group: {
+            _id: null,
+            totalItems: { $sum: 1 },
+            activeItems: {
+              $sum: { $cond: [{ $eq: ["$availability", true] }, 1, 0] },
+            },
+            lowStockItems: {
+              $sum: { $cond: [{ $lte: ["$stock", 5] }, 1, 0] },
+            },
+          },
+        },
+      ]),
+    ]);
+
+    return res.json(
+      new ApiResponse(200, "Admin menu items fetched successfully", {
+        data: items,
+        pagination: {
+          currentPage: page,
+          totalPages: Math.ceil(total / limit),
+          totalItems: total,
+          itemsPerPage: limit,
+        },
+        summary: summary[0] || {
+          totalItems: 0,
+          activeItems: 0,
+          lowStockItems: 0,
+        },
+      })
+    );
+  } catch (err) {
+    next(err);
+  }
+};
+
 /**
  * GET MENU BY RESTAURANT (WITH CACHE)
  */
@@ -203,6 +273,7 @@ const deleteMenuItem = async (req, res, next) => {
 
 module.exports = {
   getAllMenuItems,
+  getAdminMenuItems,
   getRestaurantMenu,
   createMenuItem,
   updateMenuItem,

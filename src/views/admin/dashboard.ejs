@@ -1,22 +1,127 @@
 <%- include("../partials/header") %>
-<section class="container" style="padding: 40px 0;">
-  <h1 style="font-size: 28px; font-weight: 700; margin-bottom: 32px;">⚙️ Admin Dashboard</h1>
-  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
-    <a href="/admin/restaurants" style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:32px 20px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);font-weight:600;font-size:15px;color:var(--text-dark);transition:var(--transition);" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
-      <span style="font-size:36px;">🍽️</span> Restaurants
-    </a>
-    <a href="/admin/menu" style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:32px 20px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);font-weight:600;font-size:15px;color:var(--text-dark);transition:var(--transition);" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
-      <span style="font-size:36px;">📋</span> Menu
-    </a>
-    <a href="/admin/orders" style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:32px 20px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);font-weight:600;font-size:15px;color:var(--text-dark);transition:var(--transition);" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
-      <span style="font-size:36px;">📦</span> Orders
-    </a>
-    <a href="/admin/payments" style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:32px 20px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);font-weight:600;font-size:15px;color:var(--text-dark);transition:var(--transition);" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
-      <span style="font-size:36px;">💳</span> Payments
-    </a>
-    <a href="/admin/analytics" style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:32px 20px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);font-weight:600;font-size:15px;color:var(--text-dark);transition:var(--transition);" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
-      <span style="font-size:36px;">📊</span> Analytics
-    </a>
+
+<section class="admin-shell">
+  <div class="container admin-container">
+    <div class="admin-hero">
+      <div>
+        <span class="admin-eyebrow">Operations Control Center</span>
+        <h1>Admin Dashboard</h1>
+        <p>Track revenue, monitor live orders, manage catalog health, and keep the platform running smoothly from one place.</p>
+      </div>
+      <div class="admin-hero-actions">
+        <a href="/admin/restaurants" class="btn-primary">Manage Restaurants</a>
+        <a href="/admin/orders" class="btn-outline">Review Orders</a>
+      </div>
+    </div>
+
+    <div id="dashboardStats" class="admin-stat-grid"></div>
+
+    <div class="admin-grid admin-grid-2">
+      <div class="admin-panel">
+        <div class="admin-panel-head">
+          <div>
+            <span class="admin-panel-kicker">6-Month Trend</span>
+            <h2>Revenue & order momentum</h2>
+          </div>
+        </div>
+        <div id="trendChart" class="chart-surface"></div>
+      </div>
+
+      <div class="admin-panel">
+        <div class="admin-panel-head">
+          <div>
+            <span class="admin-panel-kicker">Quick Actions</span>
+            <h2>Jump into admin workflows</h2>
+          </div>
+        </div>
+        <div class="quick-links">
+          <a class="quick-link-card" href="/admin/restaurants">
+            <strong>Restaurant Management</strong>
+            <span>Add, edit, and monitor partner restaurants.</span>
+          </a>
+          <a class="quick-link-card" href="/admin/menu">
+            <strong>Menu Inventory</strong>
+            <span>Update catalog items, stock, and availability.</span>
+          </a>
+          <a class="quick-link-card" href="/admin/orders">
+            <strong>Order Operations</strong>
+            <span>Move active orders through each delivery stage.</span>
+          </a>
+          <a class="quick-link-card" href="/admin/payments">
+            <strong>Payment Desk</strong>
+            <span>Track success, failures, pending payments, and refunds.</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-grid admin-grid-2">
+      <div class="admin-panel">
+        <div class="admin-panel-head">
+          <div>
+            <span class="admin-panel-kicker">Order Mix</span>
+            <h2>Status distribution</h2>
+          </div>
+        </div>
+        <div id="orderMixChart" class="ring-grid"></div>
+      </div>
+
+      <div class="admin-panel">
+        <div class="admin-panel-head">
+          <div>
+            <span class="admin-panel-kicker">Payment Health</span>
+            <h2>Collection status mix</h2>
+          </div>
+        </div>
+        <div id="paymentMixChart" class="ring-grid"></div>
+      </div>
+    </div>
+
+    <div class="admin-grid admin-grid-2">
+      <div class="admin-panel">
+        <div class="admin-panel-head">
+          <div>
+            <span class="admin-panel-kicker">Top Restaurants</span>
+            <h2>Best performing partners</h2>
+          </div>
+        </div>
+        <div id="topRestaurants" class="admin-table-wrap"></div>
+      </div>
+
+      <div class="admin-panel">
+        <div class="admin-panel-head">
+          <div>
+            <span class="admin-panel-kicker">Top Items</span>
+            <h2>Most ordered menu items</h2>
+          </div>
+        </div>
+        <div id="topItems" class="admin-table-wrap"></div>
+      </div>
+    </div>
+
+    <div class="admin-grid admin-grid-2">
+      <div class="admin-panel">
+        <div class="admin-panel-head">
+          <div>
+            <span class="admin-panel-kicker">Recent Orders</span>
+            <h2>Latest operational activity</h2>
+          </div>
+        </div>
+        <div id="recentOrders" class="admin-feed"></div>
+      </div>
+
+      <div class="admin-panel">
+        <div class="admin-panel-head">
+          <div>
+            <span class="admin-panel-kicker">Recent Payments</span>
+            <h2>Latest transactions</h2>
+          </div>
+        </div>
+        <div id="recentPayments" class="admin-feed"></div>
+      </div>
+    </div>
   </div>
 </section>
+
 <%- include("../partials/footer") %>
+<script src="/js/admin/dashboard.js"></script>

@@ -14,6 +14,7 @@ const authorize = require("../middlewares/role.middleware");
 router.post("/retry", protect, retryPayment);
 
 
+router.get("/", protect, authorize("admin"), getAllPayments);
 router.get("/all", protect, authorize("admin"), getAllPayments);
 
 router.get("/failed", protect, authorize("admin"), getFailedPayments);

@@ -28,9 +28,43 @@
   document.addEventListener("DOMContentLoaded", async () => {
     const nav = document.getElementById("navActions");
     const token = localStorage.getItem("token");
+    const currentPath = window.location.pathname;
+
+    const initialsFromName = (name = "") =>
+      name
+        .trim()
+        .split(/\s+/)
+        .slice(0, 2)
+        .map((part) => part.charAt(0).toUpperCase())
+        .join("") || "U";
 
     if (token) {
+      const user = await window.getCurrentUser();
+
+      if (user?.role === "admin") {
+        const initials = initialsFromName(user.name);
+        nav.innerHTML = `
+          <div class="profile-menu">
+            <button class="profile-trigger" type="button">
+              <span class="profile-avatar admin-avatar">${initials}</span>
+              <span class="profile-copy">
+                <strong>${user.name || "Admin"}</strong>
+                <small>Administrator</small>
+              </span>
+            </button>
+            <div class="profile-dropdown">
+              <a href="/admin/dashboard" class="profile-link ${currentPath.startsWith("/admin/dashboard") ? "active" : ""}">Dashboard</a>
+              <a href="/admin/orders" class="profile-link ${currentPath.startsWith("/admin/orders") ? "active" : ""}">Orders</a>
+              <a href="/admin/analytics" class="profile-link ${currentPath.startsWith("/admin/analytics") ? "active" : ""}">Analytics</a>
+              <button onclick="logout()" class="profile-logout" type="button">Logout</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
       const count = await getCartCount();
+      const initials = initialsFromName(user?.name);
 
       nav.innerHTML = `
         <a href="/cart" class="cart-btn">
@@ -38,13 +72,25 @@
           ${count > 0 ? `<span class="cart-badge">${count}</span>` : ''}
         </a>
 
-        <a href="/orders" class="btn-outline">
+        <a href="/orders" class="btn-outline ${currentPath.startsWith("/orders") ? "active" : ""}">
           📋 Orders
         </a>
 
-        <button onclick="logout()" class="btn-ghost">
-          Logout
-        </button>
+        <div class="profile-menu">
+          <button class="profile-trigger" type="button">
+            <span class="profile-avatar">${initials}</span>
+            <span class="profile-copy">
+              <strong>${user?.name || "Customer"}</strong>
+              <small>${user?.email || "Signed in"}</small>
+            </span>
+          </button>
+          <div class="profile-dropdown">
+            <a href="/" class="profile-link ${currentPath === "/" ? "active" : ""}">Home</a>
+            <a href="/orders" class="profile-link ${currentPath.startsWith("/orders") ? "active" : ""}">My Orders</a>
+            <a href="/cart" class="profile-link ${currentPath.startsWith("/cart") ? "active" : ""}">My Cart</a>
+            <button onclick="logout()" class="profile-logout" type="button">Logout</button>
+          </div>
+        </div>
       `;
     } else {
       nav.innerHTML = `

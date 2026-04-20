@@ -10,6 +10,7 @@ const {
 } = require("../validators/order.validator");
 const authorize = require("../middlewares/role.middleware");
 
+router.get("/admin/all", protect, authorize("admin"), orderController.getAllOrdersAdmin);
 
 router.post(
   "/",
