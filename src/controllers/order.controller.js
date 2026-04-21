@@ -84,21 +84,22 @@ const placeOrder = async (req, res, next) => {
 
     await order.save({ session });
 
-    //  payment
+    const paymentStatus = paymentMethod === "online" ? "success" : "pending";
 
-    // Always pending initially
+    // create payment
     await Payment.create(
       [
         {
           orderId: order._id,
-          status: "pending",
+          status: paymentStatus,
           method: paymentMethod,
         },
       ],
       { session }
     );
 
-    order.paymentStatus = "pending";
+    // update order payment status
+    order.paymentStatus = paymentStatus;
     await order.save({ session });
     //  clear cart
     cart.items = [];
@@ -109,7 +110,7 @@ const placeOrder = async (req, res, next) => {
     session.endSession();
 
     // AFTER transaction commit
-    if (paymentMethod === "online") {
+    if (paymentMethod === "cod") {
       await orderQueue.add(
         "cancel-order",
         { orderId: order._id },
@@ -158,7 +159,7 @@ const getOrderById = async (req, res, next) => {
         select: "name price",
       })
       .populate("userId", "email")
-      .populate("restaurantId","name");
+      .populate("restaurantId", "name");
 
     if (!order) {
       throw new ApiError(404, "Order not found");

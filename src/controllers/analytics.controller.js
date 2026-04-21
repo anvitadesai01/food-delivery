@@ -54,11 +54,10 @@ const revenueController = async (req, res, next) => {
 
     if (!data || data.length === 0) {
       return res
-        .status(200)
         .json(new ApiResponse(200, "No records found", { data: [] }));
     }
 
-    return res.status(200).json(
+    return res.json(
       new ApiResponse(200, "Revenue fetched successfully", {
         page,
         limit,
@@ -109,11 +108,10 @@ const getTopRestaurantsRevenue = async (req, res, next) => {
 
     if (!data || data.length === 0) {
       return res
-        .status(200)
         .json(new ApiResponse(200, "No records found", []));
     }
 
-    return res.status(200).json(
+    return res.json(
       new ApiResponse(
         200,
         "Top restaurants by revenue fetched successfully",
@@ -163,7 +161,6 @@ const mostOrderedItemsController = async (req, res, next) => {
 
     if (!data || data.length === 0) {
       return res
-        .status(200)
         .json(new ApiResponse(200, "No records found", []));
     }
 
@@ -219,11 +216,10 @@ const monthlyTrendsController = async (req, res, next) => {
 
     if (!data || data.length === 0) {
       return res
-        .status(200)
         .json(new ApiResponse(200, "No records found", []));
     }
 
-    return res.status(200).json(
+    return res.json(
       new ApiResponse(200, "Monthly trends fetched successfully", data)
     );
   } catch (err) {

@@ -33,7 +33,12 @@ const getPaymentByOrderId = async (req, res, next) => {
 
         if (!userId) throw new ApiError(401, "Unauthorized");
 
-        const order = await Order.findOne({ _id: orderId, userId });
+        const query =
+            req.user.role === "admin"
+                ? { _id: orderId }
+                : { _id: orderId, userId };
+
+        const order = await Order.findOne(query);
         if (!order) throw new ApiError(404, "Order not found");
 
         const payment = await Payment.findOne({ orderId });
@@ -46,7 +51,6 @@ const getPaymentByOrderId = async (req, res, next) => {
         next(err);
     }
 };
-
 /**
  * RETRY PAYMENT
  */

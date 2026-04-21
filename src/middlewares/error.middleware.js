@@ -5,7 +5,7 @@ const errorHandler = (err, req, res, next) => {
   console.error(err); // ✅ log full error (VERY IMPORTANT)
 
   // 🔥 Detect API or WEB
-  const isApi = req.baseUrl.startsWith("/api");
+  const isApi = req.originalUrl.startsWith("/api");
 
   // Invalid JSON
   if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
