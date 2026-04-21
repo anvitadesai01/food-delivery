@@ -10,7 +10,7 @@ const invalidatePaymentCache = async () => {
     let cursor = "0";
 
     do {
-        const [nextCursor, keys] = await redisClient.scan(cursor, {
+        const { cursor: nextCursor, keys } = await redisClient.scan(cursor, {
             MATCH: "payments:*",
             COUNT: 100,
         });
@@ -18,7 +18,7 @@ const invalidatePaymentCache = async () => {
         cursor = nextCursor;
 
         if (keys.length) {
-            await redisClient.del(keys);
+            await redisClient.del(...keys);
         }
     } while (cursor !== "0");
 };
@@ -234,10 +234,48 @@ const refundPayment = async (req, res, next) => {
     }
 };
 
+/**
+ * UPDATE PAYMENT STATUS
+ */
+const updatePaymentStatus = async (req, res, next) => {
+    try {
+        const { orderId, status } = req.body;
+
+        const validStatuses = ["pending", "success", "failed", "refunded"];
+        if (!validStatuses.includes(status)) {
+            throw new ApiError(400, "Invalid payment status");
+        }
+
+        const payment = await Payment.findOne({ orderId });
+        if (!payment) throw new ApiError(404, "Payment not found");
+
+        const oldStatus = payment.status;
+        payment.status = status;
+        await payment.save();
+
+        await Order.findByIdAndUpdate(orderId, {
+            paymentStatus: status,
+        });
+
+        await invalidatePaymentCache();
+
+        return res.status(200).json(
+            new ApiResponse(200, "Payment status updated", {
+                orderId,
+                oldStatus,
+                newStatus: status,
+            })
+        );
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
     getPaymentByOrderId,
     retryPayment,
     getAllPayments,
     getFailedPayments,
     refundPayment,
+    updatePaymentStatus,
 };

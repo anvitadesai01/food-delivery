@@ -213,6 +213,65 @@
  *         description: Internal server error
  */
 
+/**
+ * @swagger
+ * /payments/status:
+ *   patch:
+ *     summary: Update payment status
+ *     description: Updates the status of a payment and its associated order. Admin access required.
+ *     tags: [Payments]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - orderId
+ *               - status
+ *             properties:
+ *               orderId:
+ *                 type: string
+ *                 description: The ID of the order/payment to update
+ *                 example: "65f123abc456def789"
+ *               status:
+ *                 type: string
+ *                 enum: [pending, success, failed, refunded]
+ *                 description: The new status for the payment
+ *     responses:
+ *       200:
+ *         description: Payment status updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: integer
+ *                   example: 200
+ *                 message:
+ *                   type: string
+ *                   example: "Payment status updated"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     orderId:
+ *                       type: string
+ *                     oldStatus:
+ *                       type: string
+ *                     newStatus:
+ *                       type: string
+ *       400:
+ *         description: Invalid payment status provided
+ *       404:
+ *         description: Payment record not found
+ *       500:
+ *         description: Internal server error
+ */
+
+
 
 /**
  * @swagger

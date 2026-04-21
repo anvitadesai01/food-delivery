@@ -28,6 +28,4 @@ router.get("/:id/menu", getRestaurantMenu);
 
 
 
-
-
 module.exports = router;
