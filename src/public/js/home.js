@@ -21,14 +21,6 @@ async function loadCuisines() {
   const restaurants = await fetchData("/api/restaurants/top");
   if (!restaurants || restaurants.length === 0) return;
 
-  const emojiMap = {
-    Pizza: "🍕", Indian: "🍛", "Fast Food": "🍔", Chinese: "🥡",
-    Desserts: "🍰", Italian: "🍝", Mexican: "🌮", Japanese: "🍣",
-    Thai: "🍜", Burgers: "🍔", Biryani: "🍚", Sushi: "🍱",
-    Salads: "🥗", Sandwiches: "🥪", Wraps: "🌯", Seafood: "🦐",
-    Vegan: "🥦", Bakery: "🥐", Cafe: "☕",
-  };
-
   // Extract unique cuisines from all restaurants
   const allCuisines = restaurants.flatMap(r => Array.isArray(r.cuisine) ? r.cuisine : []);
   const uniqueCuisines = [...new Set(allCuisines)].filter(Boolean).sort();
@@ -160,8 +152,7 @@ async function loadDishes() {
               <span class="restaurant-media-chip">Popular Dish</span>
               <strong>${restaurantName}</strong>
               <small>${restaurantLocation}</small>
-            </div>
-           
+            </div>   
           </div>
           <div class="restaurant-content">
             <div class="restaurant-header">
