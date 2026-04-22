@@ -2,8 +2,8 @@ const Restaurant = require("../models/restaurant.model");
 const MenuItem = require("../models/menuItem.model");
 const redisClient = require("../config/redis");
 
-const ApiResponse = require("../utlis/ApiResponse");
-const ApiError = require("../utlis/ApiError");
+const ApiResponse = require("../utils/ApiResponse");
+const ApiError = require("../utils/ApiError");
 
 //  safer check
 const isApiRequest = (req) => req.baseUrl.startsWith("/api");

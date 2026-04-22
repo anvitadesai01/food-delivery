@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/user.model");
-const ApiError = require("../utlis/ApiError");
+const ApiError = require("../utils/ApiError");
 
 const parseCookies = (cookieHeader = "") =>
   cookieHeader

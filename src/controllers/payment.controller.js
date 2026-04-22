@@ -2,8 +2,8 @@ const Payment = require("../models/payment.model");
 const Order = require("../models/order.model");
 const paymentQueue = require("../queues/payment.queue");
 
-const ApiResponse = require("../utlis/ApiResponse");
-const ApiError = require("../utlis/ApiError");
+const ApiResponse = require("../utils/ApiResponse");
+const ApiError = require("../utils/ApiError");
 const redisClient = require("../config/redis");
 
 const invalidatePaymentCache = async () => {

@@ -51,35 +51,35 @@ const loadRestaurant = async () => {
 const renderPagination = (total, current, perPage) => {
     const container = document.getElementById("paginationContainer");
     const totalPages = Math.ceil(total / perPage);
-    
+
     if (totalPages <= 1) {
         container.style.display = "none";
         return;
     }
-    
+
     container.style.display = "flex";
-    
+
     let html = `
         <button class="pagination-btn nav-btn" onclick="goToPage(${current - 1})" ${current === 1 ? 'disabled' : ''}>
             ← Prev
         </button>
     `;
-    
+
     const maxVisible = 5;
     let startPage = Math.max(1, current - Math.floor(maxVisible / 2));
     let endPage = Math.min(totalPages, startPage + maxVisible - 1);
-    
+
     if (endPage - startPage < maxVisible - 1) {
         startPage = Math.max(1, endPage - maxVisible + 1);
     }
-    
+
     if (startPage > 1) {
         html += `<button class="pagination-btn" onclick="goToPage(1)">1</button>`;
         if (startPage > 2) {
             html += `<span style="color: var(--text-muted); padding: 0 4px;">...</span>`;
         }
     }
-    
+
     for (let i = startPage; i <= endPage; i++) {
         html += `
             <button class="pagination-btn ${i === current ? 'active' : ''}" onclick="goToPage(${i})">
@@ -87,22 +87,22 @@ const renderPagination = (total, current, perPage) => {
             </button>
         `;
     }
-    
+
     if (endPage < totalPages) {
         if (endPage < totalPages - 1) {
             html += `<span style="color: var(--text-muted); padding: 0 4px;">...</span>`;
         }
         html += `<button class="pagination-btn" onclick="goToPage(${totalPages})">${totalPages}</button>`;
     }
-    
+
     html += `
         <button class="pagination-btn nav-btn" onclick="goToPage(${current + 1})" ${current === totalPages ? 'disabled' : ''}>
             Next →
         </button>
     `;
-    
+
     html += `<span class="pagination-info">Page ${current} of ${totalPages} (${total} items)</span>`;
-    
+
     container.innerHTML = html;
 };
 
@@ -124,13 +124,13 @@ const loadMenu = async () => {
                 </div>
             `;
             if (countEl) countEl.textContent = "0 items";
-            document.getElementById("paginationContainer").style.display = "none";
-            return;
+            const pagination = document.getElementById("paginationContainer");
+            if (pagination) pagination.style.display = "none"; return;
         }
 
         allMenuItems = menu;
         totalItems = menu.length;
-        
+
         const params = new URLSearchParams(window.location.search);
         if (params.has('page')) {
             currentPage = parseInt(params.get('page')) || 1;
@@ -213,7 +213,6 @@ const addToCart = async (menuItemId) => {
         }
 
         window.showAppToast({ title: "Added to cart", icon: "success" });
-        location.reload();
 
     } catch (err) {
         console.error(err);

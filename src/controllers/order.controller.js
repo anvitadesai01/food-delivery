@@ -5,8 +5,8 @@ const Cart = require("../models/cart.model");
 const MenuItem = require("../models/menuItem.model");
 const Payment = require("../models/payment.model");
 const orderQueue = require("../queues/order.queue");
-const ApiResponse = require("../utlis/ApiResponse");
-const ApiError = require("../utlis/ApiError");
+const ApiResponse = require("../utils/ApiResponse");
+const ApiError = require("../utils/ApiError");
 
 /**
  * PLACE ORDER (TRANSACTION SAFE)

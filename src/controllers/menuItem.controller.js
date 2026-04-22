@@ -2,8 +2,8 @@ const MenuItem = require("../models/menuItem.model");
 const Restaurant = require("../models/restaurant.model");
 const redisClient = require("../config/redis");
 
-const ApiResponse = require("../utlis/ApiResponse");
-const ApiError = require("../utlis/ApiError");
+const ApiResponse = require("../utils/ApiResponse");
+const ApiError = require("../utils/ApiError");
 
 /**
  * GET ALL AVAILABLE MENU ITEMS

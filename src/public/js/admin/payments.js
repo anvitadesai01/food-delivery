@@ -118,10 +118,11 @@ const loadPayments = async () => {
                   <span>Order Status: ${payment.orderId?.status || "N/A"}</span>
                 </div>
                 <div class="table-actions">
+                  <button class="btn-outline btn-small" onclick="updatePaymentStatus('${payment.orderId?._id}', '${payment.status}')">Update Status</button>
                   ${
                     payment.status === "success"
-                      ? `<button class="btn-outline btn-small" onclick="refundPayment('${payment.orderId?._id}')">Refund Payment</button>`
-                      : `<span class="admin-muted">No action available</span>`
+                      ? `<button class="btn-outline btn-small" onclick="refundPayment('${payment.orderId?._id}')">Refund</button>`
+                      : ""
                   }
                 </div>
               </article>
@@ -167,6 +168,70 @@ window.refundPayment = async (orderId) => {
   } catch (error) {
     window.showAppAlert({
       title: "Refund failed",
+      text: error.message,
+      icon: "error",
+    });
+  }
+};
+
+window.updatePaymentStatus = async (orderId, currentStatus) => {
+  const statusOptions = [
+    { value: "pending", label: "Pending" },
+    { value: "success", label: "Success" },
+    { value: "failed", label: "Failed" },
+    { value: "refunded", label: "Refunded" }
+  ].filter(s => s.value !== currentStatus);
+
+  const statusHtml = statusOptions.map(s => 
+    `<option value="${s.value}">${s.label}</option>`
+  ).join("");
+
+  const { value: newStatus } = await new Promise((resolve) => {
+    const select = document.createElement("select");
+    select.innerHTML = `<option value="">Select new status</option>${statusHtml}`;
+    select.style.cssText = "width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px;";
+    
+    const div = document.createElement("div");
+    div.appendChild(select);
+    
+    Swal.fire({
+      title: "Update Payment Status",
+      html: div,
+      showCancelButton: true,
+      confirmButtonText: "Update",
+      cancelButtonText: "Cancel",
+      preConfirm: () => {
+        if (!select.value) {
+          Swal.showValidationMessage("Please select a status");
+          return false;
+        }
+        return select.value;
+      }
+    }).then(resolve);
+  });
+
+  if (!newStatus) return;
+
+  try {
+    const response = await fetch("/api/payments/status", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${paymentToken}`,
+      },
+      body: JSON.stringify({ orderId, status: newStatus }),
+    });
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || "Status update failed");
+    }
+
+    window.showAppToast({ title: "Payment status updated", icon: "success" });
+    loadPayments();
+  } catch (error) {
+    window.showAppAlert({
+      title: "Update failed",
       text: error.message,
       icon: "error",
     });

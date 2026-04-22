@@ -1,5 +1,5 @@
 const Joi = require("joi");
-const objectId = require("../utlis/objectId.validator");
+const objectId = require("../utils/objectId.validator");
 
 /**
  * ADD TO CART

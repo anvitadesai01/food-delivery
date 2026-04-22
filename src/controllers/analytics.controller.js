@@ -1,7 +1,7 @@
 const Order = require("../models/order.model");
 
-const ApiResponse = require("../utlis/ApiResponse");
-const ApiError = require("../utlis/ApiError");
+const ApiResponse = require("../utils/ApiResponse");
+const ApiError = require("../utils/ApiError");
 
 /**
  * 1. REVENUE CONTROLLER (PAGINATED)

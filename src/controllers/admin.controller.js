@@ -3,7 +3,7 @@ const Restaurant = require("../models/restaurant.model");
 const MenuItem = require("../models/menuItem.model");
 const Order = require("../models/order.model");
 const Payment = require("../models/payment.model");
-const ApiResponse = require("../utlis/ApiResponse");
+const ApiResponse = require("../utils/ApiResponse");
 
 const getDashboardOverview = async (req, res, next) => {
   try {

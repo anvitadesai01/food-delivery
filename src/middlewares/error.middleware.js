@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const ApiError = require("../utlis/ApiError");
+const ApiError = require("../utils/ApiError");
 
 const errorHandler = (err, req, res, next) => {
   console.error(err); // ✅ log full error (VERY IMPORTANT)

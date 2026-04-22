@@ -1,8 +1,8 @@
 const Cart = require("../models/cart.model");
 const MenuItem = require("../models/menuItem.model");
 
-const ApiResponse = require("../utlis/ApiResponse");
-const ApiError = require("../utlis/ApiError");
+const ApiResponse = require("../utils/ApiResponse");
+const ApiError = require("../utils/ApiError");
 
 /**
  * ADD ITEM TO CART

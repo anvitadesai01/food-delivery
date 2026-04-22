@@ -1,7 +1,7 @@
 const User = require("../models/user.model");
-const { generateToken } = require("../utlis/jwt");
-const ApiResponse = require("../utlis/ApiResponse");
-const ApiError = require("../utlis/ApiError");
+const { generateToken } = require("../utils/jwt");
+const ApiResponse = require("../utils/ApiResponse");
+const ApiError = require("../utils/ApiError");
 
 const AUTH_COOKIE_OPTIONS = {
   httpOnly: true,
