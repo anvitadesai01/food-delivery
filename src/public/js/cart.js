@@ -60,12 +60,12 @@ const renderCart = (items) => {
                 </div>
                 <div class="cart-item-actions">
                     <div class="qty-control">
-                        <button class="qty-btn" onclick="updateQty('${item.menuItemId._id}', ${qty - 1})">−</button>
+                        <button class="qty-btn" onclick="updateQty('${item.menuItemId._id}', ${qty - 1}, ${qty})">−</button>
                         <span class="qty-value">${qty}</span>
-                        <button class="qty-btn" onclick="updateQty('${item.menuItemId._id}', ${qty + 1})">+</button>
+                        <button class="qty-btn" onclick="updateQty('${item.menuItemId._id}', ${qty + 1}, ${qty})">+</button>
                     </div>
-                    <span style="min-width: 60px; text-align: right; font-weight: 600;">₹${itemTotal}</span>
-                    <button class="remove-btn" onclick="removeItem('${item.menuItemId._id}')">🗑️</button>
+                    <span style="min-width: 60px; text-align: right; font-weight: 600;">₹${itemTotal.toFixed(2)}</span>
+                    <button class="remove-btn" onclick="removeItem('${item.menuItemId._id}', ${qty})">🗑️</button>
                 </div>
             </div>
         `;
@@ -75,18 +75,19 @@ const renderCart = (items) => {
     const deliveryFee = 40;
     const total = subtotal + taxes + deliveryFee;
 
-    document.getElementById("subtotal").textContent = `₹${subtotal}`;
-    document.getElementById("taxes").textContent = `₹${taxes}`;
-    document.getElementById("totalAmount").textContent = `₹${total}`;
+    document.getElementById("subtotal").textContent = `₹${subtotal.toFixed(2)}`;
+    document.getElementById("taxes").textContent = `₹${taxes.toFixed(2)}`;
+    document.getElementById("totalAmount").textContent = `₹${total.toFixed(2)}`;
 };
 
-const updateQty = async (menuItemId, quantity) => {
-    if (quantity < 1) {
-        removeItem(menuItemId);
+const updateQty = async (menuItemId, newQty, oldQty) => {
+    if (newQty < 1) {
+        removeItem(menuItemId, oldQty);
         return;
     }
 
     const token = localStorage.getItem("token");
+    const change = newQty - oldQty;
 
     await fetch(`${API_BASE}/cart`, {
         method: "PUT",
@@ -94,13 +95,14 @@ const updateQty = async (menuItemId, quantity) => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ menuItemId, quantity }),
+        body: JSON.stringify({ menuItemId, quantity: newQty }),
     });
 
+    updateCartBadge(change);
     loadCart();
 };
 
-const removeItem = async (menuItemId) => {
+const removeItem = async (menuItemId, oldQty) => {
     const token = localStorage.getItem("token");
 
     await fetch(`${API_BASE}/cart/${menuItemId}`, {
@@ -110,6 +112,7 @@ const removeItem = async (menuItemId) => {
         },
     });
 
+    updateCartBadge(-oldQty);
     loadCart();
 };
 

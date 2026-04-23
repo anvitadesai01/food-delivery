@@ -175,6 +175,7 @@ const addToCart = async (menuItemId) => {
     }
 
     window.showAppToast({ title: "Added to cart", icon: "success" });
+    updateCartBadge(1);
   } catch (err) {
     console.error(err);
     window.showAppAlert({

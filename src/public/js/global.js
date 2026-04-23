@@ -220,3 +220,23 @@ const getCartCount = async () => {
     return 0;
   }
 };
+
+window.updateCartBadge = (change = 0) => {
+  const cartBtn = document.querySelector(".cart-btn");
+  if (!cartBtn) return;
+
+  let badge = cartBtn.querySelector(".cart-badge");
+  let currentCount = badge ? parseInt(badge.textContent) || 0 : 0;
+  currentCount += change;
+
+  if (currentCount <= 0) {
+    if (badge) badge.remove();
+  } else {
+    if (!badge) {
+      badge = document.createElement("span");
+      badge.className = "cart-badge";
+      cartBtn.appendChild(badge);
+    }
+    badge.textContent = currentCount;
+  }
+};

@@ -1,6 +1,11 @@
+const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user.model");
 const ApiError = require("../utils/ApiError");
+
+
+const protectJWT = passport.authenticate("jwt", { session: false });
+
 
 const parseCookies = (cookieHeader = "") =>
   cookieHeader
@@ -36,6 +41,9 @@ const attachUser = async (req, token) => {
   return user;
 };
 
+
+
+//  CUSTOM AUTH 
 const protect = async (req, res, next) => {
   try {
     const token = getTokenFromRequest(req);
@@ -81,8 +89,12 @@ const optionalAuth = async (req, res, next) => {
   next();
 };
 
-module.exports = protect;
-module.exports.protect = protect;
-module.exports.protectPage = protectPage;
-module.exports.optionalAuth = optionalAuth;
-module.exports.getTokenFromRequest = getTokenFromRequest;
+
+
+module.exports = {
+  protect,          // custom JWT (API + SSR)
+  protectPage,      // SSR redirect
+  optionalAuth,     // optional login
+  getTokenFromRequest,
+  protectJWT        // ✅ passport version (for Postman/testing)
+};

@@ -8,7 +8,7 @@ let currentFilters = {};
 const fetchRestaurants = async (query = "") => {
   try {
     const res = await fetch(`${API_BASE}/restaurants${query}`);
-    const data = await res.json();
+    const data = await res.json();  
     return data.data;
   } catch (err) {
     console.error(err);

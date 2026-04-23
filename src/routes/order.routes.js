@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const orderController = require("../controllers/order.controller");
-const protect = require('../middlewares/auth.middleware')
+const {protectJWT} = require('../middlewares/auth.middleware')
 const validate = require("../middlewares/validate.middleware");
 const {
   createOrderSchema,
@@ -10,22 +10,22 @@ const {
 } = require("../validators/order.validator");
 const authorize = require("../middlewares/role.middleware");
 
-router.get("/admin/all", protect, authorize("admin"), orderController.getAllOrdersAdmin);
+router.get("/admin/all", protectJWT, authorize("admin"), orderController.getAllOrdersAdmin);
 
 router.post(
   "/",
-  protect,
+  protectJWT,
   validate(createOrderSchema),
   orderController.placeOrder
 );
 
 
-router.get("/:id",protect, orderController.getOrderById);
-router.get("/", protect, orderController.getUserOrders);
+router.get("/:id",protectJWT, orderController.getOrderById);
+router.get("/", protectJWT, orderController.getUserOrders);
 
 
 router.patch(
-  "/:id/status",protect,authorize("admin"),
+  "/:id/status",protectJWT,authorize("admin"),
   validate(updateOrderStatusSchema),
   orderController.updateOrderStatus
 );

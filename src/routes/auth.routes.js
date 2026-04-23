@@ -9,7 +9,7 @@ const {
 } = require("../controllers/auth.controller");
 
 const validate = require("../middlewares/validate.middleware");
-const protect = require("../middlewares/auth.middleware");
+const {protectJWT} = require("../middlewares/auth.middleware");
 const {
   registerSchema,
   loginSchema,
@@ -21,7 +21,7 @@ router.post("/register", validate(registerSchema), registerUser);
 
 
 router.post("/login", validate(loginSchema), loginUser);
-router.get("/me", protect, getCurrentUser);
-router.post("/logout", protect, logoutUser);
+router.get("/me", protectJWT, getCurrentUser);
+router.post("/logout", protectJWT, logoutUser);
 
 module.exports = router;

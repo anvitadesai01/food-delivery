@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const protect = require("../middlewares/auth.middleware");
+const {protectJWT} = require("../middlewares/auth.middleware");
 
 const {
   addItemToCart,
@@ -12,14 +12,14 @@ const {
 const validate = require("../middlewares/validate.middleware");
 const { addToCartSchema , updateCartSchema, removeItemSchema} = require("../validators/cart.validator");
 
-router.post("/",protect,validate(addToCartSchema), addItemToCart);
+router.post("/",protectJWT,validate(addToCartSchema), addItemToCart);
 
-router.put("/", protect,validate(updateCartSchema),  updateCart);
-
-
-router.delete("/:menuItemId",  protect,validate(removeItemSchema), removeItem);
+router.put("/", protectJWT,validate(updateCartSchema),  updateCart);
 
 
-router.get("/", protect, getUserCart);
+router.delete("/:menuItemId",  protectJWT,validate(removeItemSchema), removeItem);
+
+
+router.get("/", protectJWT, getUserCart);
 
 module.exports = router;
